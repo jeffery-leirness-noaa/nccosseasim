@@ -29,5 +29,7 @@ Imports:
     tibble,
     tidyr,
     yardstick
-Remotes:  
+Remotes: 
     jeffery-leirness-noaa/rastersample
+URL: https://github.com/jeffery-leirness-noaa/nccosseasim
+BugReports: https://github.com/jeffery-leirness-noaa/nccosseasim/issues
