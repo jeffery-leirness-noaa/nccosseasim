@@ -12,7 +12,6 @@
 #' @param verbose description
 #'
 #' @return description
-#' @examples
 run_simulation <- function(sim_data, sites = NULL, formula, n, method,
                            strata_var = NULL, num_sim, use_dirinla = TRUE,
                            tol0 = NULL, verbose = FALSE) {
@@ -46,6 +45,7 @@ run_simulation <- function(sim_data, sites = NULL, formula, n, method,
   sim |> SimEngine::run()
 
 }
+#' @importFrom rlang .data
 sim_script <- function() {
   samp_str <- sim_data |>
     rastersample::spatial_sample(n = L$n, method = L$method,

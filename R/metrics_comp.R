@@ -6,26 +6,26 @@
 #' @param summarize description
 #'
 #' @return description
-#' @examples
 metrics_comp <- function(truth, estimate, metric = "all", summarize = FALSE) {
   if (metric == "rmse") {
-    comp_rmse(truth, estimate = estimate, summarize = summarize)
+    rmse_comp(truth, estimate = estimate, summarize = summarize)
   } else if (metric == "mae") {
-    comp_mae(truth, estimate = estimate, summarize = summarize)
+    mae_comp(truth, estimate = estimate, summarize = summarize)
   } else if (metric == "rho") {
-    comp_rho(truth, estimate = estimate, summarize = summarize)
+    rho_comp(truth, estimate = estimate, summarize = summarize)
   } else if (metric == "mlr") {
-    comp_mlr(truth, estimate = estimate, summarize = summarize)
+    mlr_comp(truth, estimate = estimate, summarize = summarize)
   } else if (metric == "all") {
     dplyr::bind_rows(
-      comp_rmse(truth, estimate = estimate, summarize = summarize),
-      comp_mae(truth, estimate = estimate, summarize = summarize),
-      comp_rho(truth, estimate = estimate, summarize = summarize),
-      comp_mlr(truth, estimate = estimate, summarize = summarize)
+      rmse_comp(truth, estimate = estimate, summarize = summarize),
+      mae_comp(truth, estimate = estimate, summarize = summarize),
+      rho_comp(truth, estimate = estimate, summarize = summarize),
+      mlr_comp(truth, estimate = estimate, summarize = summarize)
     )
   }
 }
 # root mean square error
+#' @importFrom rlang .data
 rmse_comp <- function(truth, estimate, summarize = FALSE) {
   m <- (truth - estimate) ^ 2 |>
     apply(MARGIN = 2, FUN = mean) |>
@@ -35,11 +35,12 @@ rmse_comp <- function(truth, estimate, summarize = FALSE) {
   } else {
     tibble::tibble(.metric = "rmse", .estimate = m) |>
       dplyr::mutate(id = 1:dplyr::n()) |>
-      tidyr::pivot_wider(names_from = id, values_from = .estimate,
+      tidyr::pivot_wider(names_from = .data$id, values_from = .data$.estimate,
                          names_prefix = ".estimate_")
   }
 }
 # mean absolute error
+#' @importFrom rlang .data
 mae_comp <- function(truth, estimate, summarize = FALSE) {
   m <- (truth - estimate) |>
     abs() |>
@@ -49,11 +50,12 @@ mae_comp <- function(truth, estimate, summarize = FALSE) {
   } else {
     tibble::tibble(.metric = "mae", .estimate = m) |>
       dplyr::mutate(id = 1:dplyr::n()) |>
-      tidyr::pivot_wider(names_from = id, values_from = .estimate,
+      tidyr::pivot_wider(names_from = .data$id, values_from = .data$.estimate,
                          names_prefix = ".estimate_")
   }
 }
 # spearman rank correlation
+#' @importFrom rlang .data
 rho_comp <- function(truth, estimate, summarize = FALSE) {
   m <- stats::cor(truth, estimate, use = "complete.obs", method = "spearman") |>
     diag()
@@ -62,12 +64,13 @@ rho_comp <- function(truth, estimate, summarize = FALSE) {
   } else {
     tibble::tibble(.metric = "rho", .estimate = m) |>
       dplyr::mutate(id = 1:dplyr::n()) |>
-      tidyr::pivot_wider(names_from = id, values_from = .estimate,
+      tidyr::pivot_wider(names_from = .data$id, values_from = .data$.estimate,
                          names_prefix = ".estimate_")
   }
 }
 # mean log ratio
 # caution: this is experimental, has not been tested/verified, nor has any real theory behind its use
+#' @importFrom rlang .data
 mlr_comp <- function(truth, estimate, summarize = FALSE) {
   m <- (estimate / truth) |>
     log() |>
@@ -77,7 +80,7 @@ mlr_comp <- function(truth, estimate, summarize = FALSE) {
   } else {
     tibble::tibble(.metric = "mlr", .estimate = m) |>
       dplyr::mutate(id = 1:dplyr::n()) |>
-      tidyr::pivot_wider(names_from = id, values_from = .estimate,
+      tidyr::pivot_wider(names_from = .data$id, values_from = .data$.estimate,
                          names_prefix = ".estimate_")
   }
 }
@@ -94,13 +97,13 @@ mlr_comp <- function(truth, estimate, summarize = FALSE) {
 #' @param na_rm A `logical` value indicating whether `NA` values should be stripped before the computation proceeds.
 #' @param case_weights The optional column identifier for case weights. This should be an unquoted column name that evaluates to a numeric column in `data`. For `_vec()` functions, a `numeric` vector.
 #'
-#' @return
-#' @examples
+#' @return description
 rho <- function(data, ...) {
   UseMethod("rho")
 }
 rho <- yardstick::new_numeric_metric(rho, direction = "maximize")
 
+#' @export
 rho.data.frame <- function(data, truth, estimate, na_rm = TRUE,
                            case_weights = NULL, ...) {
   yardstick::numeric_metric_summarizer(
@@ -144,13 +147,13 @@ rho_impl <- function(truth, estimate, case_weights = NULL) {
 #' @param na_rm A `logical` value indicating whether `NA` values should be stripped before the computation proceeds.
 #' @param case_weights The optional column identifier for case weights. This should be an unquoted column name that evaluates to a numeric column in `data`. For `_vec()` functions, a `numeric` vector.
 #'
-#' @return
-#' @examples
+#' @return description
 mtr <- function(data, ...) {
   UseMethod("mtr")
 }
 mtr <- yardstick::new_numeric_metric(mtr, direction = "minimize")
 
+#' @export
 mtr.data.frame <- function(data, truth, estimate, thresh = 0, na_rm = TRUE,
                            case_weights = NULL, ...) {
   yardstick::numeric_metric_summarizer(
