@@ -19,6 +19,9 @@ rho(data, ...)
 
 \item{case_weights}{The optional column identifier for case weights. This should be an unquoted column name that evaluates to a numeric column in \code{data}. For \verb{_vec()} functions, a \code{numeric} vector.}
 }
+\value{
+description
+}
 \description{
 Calculate the Spearman rank correlation via stats::cor(truth, estimate, use = "complete.obs", method = "spearman").
 }

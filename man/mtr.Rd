@@ -21,6 +21,9 @@ mtr(data, ...)
 
 \item{case_weights}{The optional column identifier for case weights. This should be an unquoted column name that evaluates to a numeric column in \code{data}. For \verb{_vec()} functions, a \code{numeric} vector.}
 }
+\value{
+description
+}
 \description{
 Median true result when estimated value is greater than or equal to some threshold value (implemented as a custom performance metric in the \href{https://yardstick.tidymodels.org/}{yardstick} package)
 }
