@@ -27,8 +27,7 @@ Imports:
     stringr,
     terra,
     tibble,
-    tidyr,
-    yardstick
+    tidyr
 Remotes: 
     jeffery-leirness-noaa/rastersample
 URL: https://github.com/jeffery-leirness-noaa/nccosseasim
