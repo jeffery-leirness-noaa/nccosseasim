@@ -1,4 +1,4 @@
-Package: nccosseasimframework
+Package: nccosseasim
 Title: Simulation framework for NCCOS SEA branch
 Version: 0.0.0.9000
 Authors@R: 
@@ -14,3 +14,20 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Imports: 
+    DirichletReg,
+    dirinla,
+    dplyr,
+    pipebind,
+    purrr,
+    rastersample (>= 0.0.0.9000),
+    rlang,
+    sf,
+    SimEngine,
+    stringr,
+    terra,
+    tibble,
+    tidyr,
+    yardstick
+Remotes:  
+    jeffery-leirness-noaa/rastersample
