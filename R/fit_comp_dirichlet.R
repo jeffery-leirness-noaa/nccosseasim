@@ -7,6 +7,7 @@
 #' @param verbose description
 #'
 #' @return description
+#' @export
 fit_comp_dirichlet <- function(data, formula, use_dirinla = FALSE, tol0 = NULL,
                                verbose = FALSE) {
   # simulate observed substrate compositions
@@ -51,6 +52,7 @@ fit_comp_dirichlet <- function(data, formula, use_dirinla = FALSE, tol0 = NULL,
 #' @param formula description
 #'
 #' @return description
+#' @export
 sample_fit_comp_dirichlet <- function(data, n, method, bias_var = NULL,
                                       bias_thresh = NULL, clh_var = NULL,
                                       clh_iter = NULL, strata_var = NULL,
@@ -86,6 +88,7 @@ sample_fit_comp_dirichlet <- function(data, n, method, bias_var = NULL,
 #' @param model description
 #'
 #' @return description
+#' @export
 predict_comp_dirichlet <- function(data, model) {
 
   # if data is a PackedSpatRaster object, use terra::unwrap() to unpack it

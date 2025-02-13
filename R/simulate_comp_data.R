@@ -9,6 +9,7 @@
 #' @param seed description
 #'
 #' @return description
+#' @export
 simulate_comp_data <- function(x, d, layers = NULL, poly_degree = NULL,
                                n_cov_sim = NULL, as_raster = FALSE,
                                seed = NULL) {

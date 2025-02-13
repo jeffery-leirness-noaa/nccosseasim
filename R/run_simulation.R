@@ -13,6 +13,7 @@
 #'
 #' @return description
 #' @importFrom rlang .data
+#' @export
 run_simulation <- function(sim_data, sites = NULL, formula, n, method,
                            strata_var = NULL, num_sim, use_dirinla = TRUE,
                            tol0 = NULL, verbose = FALSE) {

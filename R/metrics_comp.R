@@ -6,6 +6,7 @@
 #' @param summarize description
 #'
 #' @return description
+#' @export
 metrics_comp <- function(truth, estimate, metric = "all", summarize = FALSE) {
   if (metric == "rmse") {
     rmse_comp(truth, estimate = estimate, summarize = summarize)
