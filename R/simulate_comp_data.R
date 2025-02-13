@@ -23,7 +23,7 @@ simulate_comp_data <- function(x, d, layers = NULL, poly_degree = NULL,
   if (is.null(layers) & !is.null(poly_degree)) {
     if (poly_degree > 1) {
       x_add <- purrr::map(2:poly_degree, \(deg) x^deg |>
-                            setNames(nm = stringr::str_c(names(x), "^", deg))) |>
+                            stats::setNames(nm = stringr::str_c(names(x), "^", deg))) |>
         terra::rast()
       x <- c(x, x_add)
     }
@@ -47,7 +47,7 @@ simulate_comp_data <- function(x, d, layers = NULL, poly_degree = NULL,
     rep.int(times = d) |>
     stringr::str_flatten(collapse = " | ") |>
     pipebind::bind(._, stringr::str_c("y ~ ", ._)) |>
-    as.formula()
+    stats::as.formula()
 
 
   # simulate compositional data ---------------------------------------------
@@ -55,7 +55,7 @@ simulate_comp_data <- function(x, d, layers = NULL, poly_degree = NULL,
   # # method 1: create SpatRaster object containing simulated substrate composition
   # # probabilities
   # # linear effects formulation
-  # x_sim <- rnorm(d * 2, mean = 0, sd = 2) |>
+  # x_sim <- stats::rnorm(d * 2, mean = 0, sd = 2) |>
   #   matrix(nrow = d) |>
   #   tibble::as_tibble(.name_repair = ~ paste0("beta_", 0:1))
   #
@@ -87,7 +87,7 @@ simulate_comp_data <- function(x, d, layers = NULL, poly_degree = NULL,
     n = nrow(df)
   )
   x_sim <- ncol(ds_sim) |>
-    rnorm(mean = 0, sd = 2)
+    stats::rnorm(mean = 0, sd = 2)
   eta_sim <- ds_sim %*% x_sim
   alpha_sim <- eta_sim |>
     exp() |>
