@@ -26,7 +26,7 @@ You can install the development version of nccosseasim like so:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("jeffery-leirness-noaa/rastersample")
+devtools::install_github("jeffery-leirness-noaa/nccosseasim")
 ```
 
 ## Disclaimer
