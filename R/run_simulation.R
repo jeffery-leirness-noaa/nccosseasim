@@ -10,13 +10,16 @@
 #' @param use_dirinla description
 #' @param tol0 description
 #' @param verbose description
+#' @param parallel description
+#' @param n_cores description
 #'
 #' @return description
 #' @importFrom rlang .data
 #' @export
 run_simulation <- function(sim_data, sites = NULL, formula, n, method,
                            strata_var = NULL, num_sim, use_dirinla = TRUE,
-                           tol0 = NULL, verbose = FALSE) {
+                           tol0 = NULL, verbose = FALSE, parallel = FALSE,
+                           n_cores = 1L) {
 
   # if sim_data is a PackedSpatRaster object, use terra::unwrap() to unpack it
   if (inherits(sim_data, "PackedSpatRaster")) sim_data <- terra::unwrap(sim_data)
@@ -37,7 +40,9 @@ run_simulation <- function(sim_data, sites = NULL, formula, n, method,
 
   # set simulation configuration
   sim <- sim |> SimEngine::set_config(
-    num_sim = num_sim
+    num_sim = num_sim,
+    parallel = parallel,
+    n_cores
   )
 
   # specify simulation script

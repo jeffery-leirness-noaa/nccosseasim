@@ -14,7 +14,9 @@ run_simulation(
   num_sim,
   use_dirinla = TRUE,
   tol0 = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  parallel = FALSE,
+  n_cores = 1L
 )
 }
 \arguments{
@@ -37,6 +39,10 @@ run_simulation(
 \item{tol0}{description}
 
 \item{verbose}{description}
+
+\item{parallel}{description}
+
+\item{n_cores}{description}
 }
 \value{
 description
