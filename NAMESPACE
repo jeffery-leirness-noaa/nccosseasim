@@ -2,6 +2,7 @@
 
 export(fit_comp_dirichlet)
 export(metrics_comp)
+export(plot_comp_data)
 export(predict_comp_dirichlet)
 export(run_simulation)
 export(sample_fit_comp_dirichlet)
