@@ -107,7 +107,9 @@ simulate_comp_data <- function(x, d, layers = NULL, poly_degree = NULL,
     x <- c(x, r_alpha_sim)
     names(r_p_sim) <- stringr::str_c("p_sim_", 1:d)
     x <- c(x, r_p_sim)
-    tibble::lst(d = d, form_sim = form_sim, coef_sim = x_sim,
+    tibble::lst(d = d, layers = layers, poly_degree = poly_degree,
+                n_cov_sim = n_cov_sim, as_raster = as_raster, seed = seed,
+                form_sim = form_sim, coef_sim = x_sim,
                 data = terra::wrap(x))
   } else {
     df <- df |>
@@ -117,6 +119,8 @@ simulate_comp_data <- function(x, d, layers = NULL, poly_degree = NULL,
       dplyr::bind_cols(
         tibble::as_tibble(p_sim, .name_repair = ~ paste0("p_sim_", 1:d))
       )
-    tibble::lst(d = d, form_sim = form_sim, coef_sim = x_sim, data = df)
+    tibble::lst(d = d, layers = layers, poly_degree = poly_degree,
+                n_cov_sim = n_cov_sim, as_raster = as_raster, seed = seed,
+                form_sim = form_sim, coef_sim = x_sim, data = df)
   }
 }
