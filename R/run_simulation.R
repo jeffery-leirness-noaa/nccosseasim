@@ -100,17 +100,20 @@ run_simulation <- function(sim_data, sites = NULL, formula, n, method,
         rastersample::spatial_sample(n = L$n, method = L$method,
                                      strata_var = L$strata_var, drop_na = TRUE)
       m_samp <- samp_str |>
-        fit_comp_dirichlet(formula = formula, use_dirinla = use_dirinla,
-                           tol0 = tol0, verbose = verbose)
-      pred_samp <- predict_comp_dirichlet(sim_data, model = m_samp) |>
+        nccosseasim::fit_comp_dirichlet(formula = formula,
+                                        use_dirinla = use_dirinla, tol0 = tol0,
+                                        verbose = verbose)
+      pred_samp <- nccosseasim::predict_comp_dirichlet(sim_data, model = m_samp) |>
         terra::unwrap()
       res_samp <- terra::as.data.frame(pred_samp) |>
         tibble::as_tibble() |>
         dplyr::select(dplyr::starts_with("p_")) |>
         tidyr::drop_na() |>
-        pipebind::bind(._, metrics_comp(truth = dplyr::select(._, dplyr::starts_with("p_sim")),
-                                        estimate = dplyr::select(._, dplyr::starts_with("p_hat")),
-                                        summarize = FALSE)) |>
+        pipebind::bind(._, nccosseasim::metrics_comp(
+          truth = dplyr::select(._, dplyr::starts_with("p_sim")),
+          estimate = dplyr::select(._, dplyr::starts_with("p_hat")),
+          summarize = FALSE)
+        ) |>
         dplyr::rowwise() |>
         dplyr::mutate(.estimate_mean = mean(dplyr::c_across(dplyr::starts_with(".estimate"))),
                       .estimate_min = min(dplyr::c_across(dplyr::starts_with(".estimate"))),
