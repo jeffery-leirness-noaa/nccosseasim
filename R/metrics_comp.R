@@ -14,6 +14,8 @@ metrics_comp <- function(truth, estimate, metric = "all", summarize = FALSE) {
     mae_comp(truth, estimate = estimate, summarize = summarize)
   } else if (metric == "rho") {
     rho_comp(truth, estimate = estimate, summarize = summarize)
+  } else if (metric == "kld") {
+    kld_comp(truth, estimate = estimate, summarize = summarize)
   } else if (metric == "mlr") {
     mlr_comp(truth, estimate = estimate, summarize = summarize)
   } else if (metric == "all") {
@@ -21,8 +23,11 @@ metrics_comp <- function(truth, estimate, metric = "all", summarize = FALSE) {
       rmse_comp(truth, estimate = estimate, summarize = summarize),
       mae_comp(truth, estimate = estimate, summarize = summarize),
       rho_comp(truth, estimate = estimate, summarize = summarize),
+      kld_comp(truth, estimate = estimate, summarize = summarize),
       mlr_comp(truth, estimate = estimate, summarize = summarize)
     )
+  } else {
+    stop("Invalid metric argument. Must be one of: 'rmse', 'mae', 'rho', 'kld', 'mlr', or 'all'")
   }
 }
 # root mean square error
@@ -64,6 +69,21 @@ rho_comp <- function(truth, estimate, summarize = FALSE) {
     tibble::tibble(.metric = "rho", .estimate = mean(m))
   } else {
     tibble::tibble(.metric = "rho", .estimate = m) |>
+      dplyr::mutate(id = 1:dplyr::n()) |>
+      tidyr::pivot_wider(names_from = .data$id, values_from = .data$.estimate,
+                         names_prefix = ".estimate_")
+  }
+}
+# kullback-leibler divergence
+# caution: this is experimental and has not been tested/verified
+#' @importFrom rlang .data
+kld_comp <- function(truth, estimate, summarize = FALSE) {
+  m <- (truth * log(truth / estimate)) |>
+    apply(MARGIN = 2, FUN = sum)
+  if (summarize) {
+    tibble::tibble(.metric = "kld", .estimate = mean(m))
+  } else {
+    tibble::tibble(.metric = "kld", .estimate = m) |>
       dplyr::mutate(id = 1:dplyr::n()) |>
       tidyr::pivot_wider(names_from = .data$id, values_from = .data$.estimate,
                          names_prefix = ".estimate_")

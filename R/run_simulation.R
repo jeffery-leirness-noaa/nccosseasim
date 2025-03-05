@@ -151,6 +151,15 @@ run_simulation <- function(sim_data, sites = NULL, formula, n, method,
         "rho_max" = res_samp |>
           dplyr::filter(.data$.metric == "rho") |>
           dplyr::pull(.data$.estimate_max),
+        "kld_mean" = res_samp |>
+          dplyr::filter(.data$.metric == "kld") |>
+          dplyr::pull(.data$.estimate_mean),
+        "kld_min" = res_samp |>
+          dplyr::filter(.data$.metric == "kld") |>
+          dplyr::pull(.data$.estimate_min),
+        "kld_max" = res_samp |>
+          dplyr::filter(.data$.metric == "kld") |>
+          dplyr::pull(.data$.estimate_max),
         ".complex" = list("performance_metrics" = res_samp)
       )
     }
