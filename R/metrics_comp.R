@@ -79,7 +79,7 @@ rho_comp <- function(truth, estimate, summarize = FALSE) {
 #' @importFrom rlang .data
 kld_comp <- function(truth, estimate, summarize = FALSE) {
   m <- (truth * log(truth / estimate)) |>
-    apply(MARGIN = 2, FUN = sum)
+    apply(MARGIN = 2, FUN = sum, na.rm = TRUE)
   if (summarize) {
     tibble::tibble(.metric = "kld", .estimate = mean(m))
   } else {
