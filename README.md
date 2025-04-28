@@ -4,18 +4,53 @@
 # nccosseasim
 
 <!-- badges: start -->
+
+[![Project Status: Active – The project has reached a stable, usable
+state and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 <!-- badges: end -->
 
-The goal of nccosseasim is to …
+## Overview
+
+The `nccosseasim` package provides a suite of functions for running
+simulations to inform sampling design decisions within the NOAA National
+Centers for Coastal Ocean Science (NCCOS) Seascape Ecology and Analytics
+(SEA) branch. It includes tools for simulating compositional data,
+analyzing simulation results, and visualizing outcomes to support
+sampling design and data collection decisions.
+
+## Features
+
+- Simulate compositional data for ecological analyses
+- Run simulations with different parameterizations
+- Compare metrics across simulation scenarios
+- Fit Dirichlet models to compositional data
+- Visualize simulation results with customizable plotting functions
 
 ## Installation
 
-You can install the development version of nccosseasim like so:
+You can install the development version of nccosseasim from GitHub:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("jeffery-leirness-noaa/nccosseasim")
 ```
+
+## Usage
+
+``` r
+library(nccosseasim)
+
+# Example code will go here
+# simulate_comp_data()
+# run_simulation()
+# plot_comp_data()
+```
+
+## Getting help
+
+If you encounter a bug, please file an issue with a minimal reproducible
+example on GitHub.
 
 ## Disclaimer
 
