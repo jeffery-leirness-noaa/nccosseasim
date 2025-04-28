@@ -35,14 +35,14 @@ The `nccosseasim` package provides a suite of functions for running simulations 
 
 You can install the development version of nccosseasim from GitHub:
 
-```r
+```{r, message = FALSE}
 # install.packages("devtools")
 devtools::install_github("jeffery-leirness-noaa/nccosseasim")
 ```
 
 ## Usage
 
-```r
+```{r}
 library(nccosseasim)
 
 # Example code will go here
