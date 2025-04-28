@@ -1,19 +1,36 @@
 #' Run simulation
 #'
-#' @param sim_data description
-#' @param sites description
-#' @param formula description
-#' @param n description
-#' @param method description
-#' @param strata_var description
-#' @param num_sim description
-#' @param use_dirinla description
-#' @param tol0 description
-#' @param verbose description
-#' @param parallel description
-#' @param n_cores description
+#' This function runs a simulation to evaluate the performance of compositional data models. 
+#' It uses spatial sampling, fits a Dirichlet regression model, predicts compositional probabilities, 
+#' and computes performance metrics such as RMSE, MAE, Spearman rank correlation, and KLD.
 #'
-#' @return description
+#' @param sim_data A `SpatRaster` or `PackedSpatRaster` object containing the simulated data.
+#'   If it is a `PackedSpatRaster`, it will be unpacked using `terra::unwrap()`.
+#' @param sites An optional `sf` object containing spatial site locations. If provided, 
+#'   it will be transformed to match the coordinate reference system of `sim_data`.
+#' @param formula A formula specifying the regression model to be fitted.
+#' @param n Integer. The number of samples to draw during spatial sampling.
+#' @param method Character. The sampling method to use (e.g., "random", "stratified").
+#' @param strata_var Character. The name of the variable to use for stratified sampling (optional).
+#' @param num_sim Integer. The number of simulation iterations to run.
+#' @param use_dirinla Logical. If `TRUE`, uses the `dirinla::dirinlareg()` function for model fitting; 
+#'   otherwise, uses `DirichletReg::DirichReg()`.
+#' @param tol0 Numeric. A tolerance parameter for `dirinla::dirinlareg()`. Ignored if `use_dirinla` is `FALSE`.
+#' @param verbose Logical. If `TRUE`, prints additional information during model fitting and simulation.
+#' @param parallel Logical. If `TRUE`, runs simulations in parallel.
+#' @param n_cores Integer. The number of cores to use for parallel processing. Defaults to 1.
+#'
+#' @return A simulation object containing the results of the simulation, including performance metrics 
+#'   (e.g., RMSE, MAE, Spearman rank correlation, KLD) for each iteration. The results are stored in 
+#'   a structured format for further analysis.
+#'
+#' @details The function performs the following steps:
+#'   1. Unpacks `PackedSpatRaster` objects and ensures coordinate reference system consistency.
+#'   2. Initializes a simulation object using the `SimEngine` package.
+#'   3. Configures simulation levels and parameters, including the number of iterations and sampling method.
+#'   4. Defines a simulation script that performs spatial sampling, model fitting, prediction, and metric computation.
+#'   5. Runs the simulation and returns the results.
+#'
 #' @importFrom rlang .data
 #' @export
 run_simulation <- function(sim_data, sites = NULL, formula, n, method,

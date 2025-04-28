@@ -15,23 +15,60 @@ simulate_comp_data(
 )
 }
 \arguments{
-\item{x}{description}
+\item{x}{A \code{SpatRaster} or \code{PackedSpatRaster} object containing covariate data. If it is a
+\code{PackedSpatRaster}, it will be unpacked using \code{terra::unwrap()}.}
 
-\item{d}{description}
+\item{d}{Integer. The number of compositional components to simulate.}
 
-\item{layers}{description}
+\item{layers}{A character vector or numeric vector specifying the layers of \code{x} to use as covariates.
+If \code{NULL}, all layers are used or a subset is selected based on \code{n_cov_sim}.}
 
-\item{poly_degree}{description}
+\item{poly_degree}{Integer. The degree of polynomial transformations to apply to the covariates.
+If greater than 1, additional layers are generated as powers of the original covariates.}
 
-\item{n_cov_sim}{description}
+\item{n_cov_sim}{Integer. The number of covariate layers to randomly select for simulation.
+Ignored if \code{layers} is specified.}
 
-\item{as_raster}{description}
+\item{as_raster}{Logical. If \code{TRUE}, the output includes simulated data as a \code{SpatRaster} object.
+If \code{FALSE}, the output is a data frame.}
 
-\item{seed}{description}
+\item{seed}{Integer. A random seed for reproducibility. If \code{NULL}, no seed is set.}
 }
 \value{
-description
+A list containing the following elements:
+\itemize{
+\item \code{d}: The number of compositional components.
+\item \code{layers}: The layers used for simulation.
+\item \code{poly_degree}: The degree of polynomial transformations applied.
+\item \code{n_cov_sim}: The number of covariate layers used.
+\item \code{as_raster}: Whether the output includes raster data.
+\item \code{seed}: The random seed used for simulation.
+\item \code{form_sim}: The formula used to generate the simulated data.
+\item \code{coef_sim}: The coefficients used in the simulation.
+\item \code{data}: A \code{SpatRaster} object (if \code{as_raster = TRUE}) or a data frame containing the simulated
+compositional probabilities (\verb{p_sim_*}) and Dirichlet parameters (\verb{alpha_sim_*}).
+}
 }
 \description{
-Simulate compositional data from a Dirichlet likelihood
+This function simulates compositional data based on a Dirichlet likelihood. It allows for
+the generation of covariate rasters, polynomial transformations, and compositional probabilities
+for a specified number of components. The output can be returned as a raster object or a data frame.
+}
+\details{
+The function performs the following steps:
+\enumerate{
+\item Unpacks \code{PackedSpatRaster} objects if necessary.
+\item Generates polynomial transformations of covariates if \code{poly_degree > 1}.
+\item Constructs a formula for simulating compositional data.
+\item Simulates Dirichlet parameters (\verb{alpha_sim_*}) and compositional probabilities (\verb{p_sim_*}).
+\item Returns the simulated data as a raster or data frame, depending on the \code{as_raster} parameter.
+}
+}
+\examples{
+# Example usage
+library(terra)
+covariates <- rast(matrix(runif(100), 10, 10))
+names(covariates) <- "cov1"
+sim_data <- simulate_comp_data(x = covariates, d = 3, poly_degree = 2, as_raster = TRUE)
+
 }

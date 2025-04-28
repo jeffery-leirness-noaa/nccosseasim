@@ -7,17 +7,31 @@
 metrics_comp(truth, estimate, metric = "all", summarize = FALSE)
 }
 \arguments{
-\item{truth}{description}
+\item{truth}{A matrix or data frame of true values for the compositional data.}
 
-\item{estimate}{description}
+\item{estimate}{A matrix or data frame of estimated values for the compositional data.}
 
-\item{metric}{description}
+\item{metric}{A character string specifying the metric to compute. Options are:
+\itemize{
+\item \code{"rmse"}: Root mean square error.
+\item \code{"mae"}: Mean absolute error.
+\item \code{"rho"}: Spearman rank correlation.
+\item \code{"kld"}: Kullback-Leibler divergence.
+\item \code{"mlr"}: Mean log ratio.
+\item \code{"all"}: Compute all metrics.
+}}
 
-\item{summarize}{description}
+\item{summarize}{Logical. If \code{TRUE}, returns a single summarized value for each metric.
+If \code{FALSE}, returns detailed results for each component.}
 }
 \value{
-description
+A tibble containing the computed metric(s). If \code{summarize = TRUE}, the tibble
+contains one row per metric. If \code{summarize = FALSE}, the tibble contains detailed
+results for each component.
 }
 \description{
-Performance metrics for compositional data
+This function computes various performance metrics for compositional data, such as
+root mean square error (RMSE), mean absolute error (MAE), Spearman rank correlation (rho),
+Kullback-Leibler divergence (KLD), and mean log ratio (MLR). It can compute a single metric
+or all metrics at once.
 }

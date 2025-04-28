@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_comp_dirichlet.R
 \name{fit_comp_dirichlet}
 \alias{fit_comp_dirichlet}
-\title{Fit dirichlet regression model (via dirinla::dirinlareg() function)}
+\title{Fit a Dirichlet regression model}
 \usage{
 fit_comp_dirichlet(
   data,
@@ -13,19 +13,22 @@ fit_comp_dirichlet(
 )
 }
 \arguments{
-\item{data}{description}
+\item{data}{A data frame containing the input data. Must include columns with names
+starting with "alpha_sim" for the Dirichlet parameters.}
 
-\item{formula}{description}
+\item{formula}{A formula specifying the regression model to be fitted.}
 
-\item{use_dirinla}{description}
+\item{use_dirinla}{Logical. If \code{TRUE}, uses the \code{dirinla::dirinlareg()} function;
+otherwise, uses \code{DirichletReg::DirichReg()}.}
 
-\item{tol0}{description}
+\item{tol0}{Numeric. A tolerance parameter for \code{dirinla::dirinlareg()}. Ignored if \code{use_dirinla} is \code{FALSE}.}
 
-\item{verbose}{description}
+\item{verbose}{Logical. If \code{TRUE}, prints additional information during model fitting.}
 }
 \value{
-description
+A fitted Dirichlet regression model object.
 }
 \description{
-Fit dirichlet regression model (via dirinla::dirinlareg() function)
+This function fits a Dirichlet regression model using either the \code{dirinla::dirinlareg()}
+function or the \code{DirichletReg::DirichReg()} function, depending on the \code{use_dirinla} parameter.
 }

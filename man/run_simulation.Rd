@@ -20,33 +20,50 @@ run_simulation(
 )
 }
 \arguments{
-\item{sim_data}{description}
+\item{sim_data}{A \code{SpatRaster} or \code{PackedSpatRaster} object containing the simulated data.
+If it is a \code{PackedSpatRaster}, it will be unpacked using \code{terra::unwrap()}.}
 
-\item{sites}{description}
+\item{sites}{An optional \code{sf} object containing spatial site locations. If provided,
+it will be transformed to match the coordinate reference system of \code{sim_data}.}
 
-\item{formula}{description}
+\item{formula}{A formula specifying the regression model to be fitted.}
 
-\item{n}{description}
+\item{n}{Integer. The number of samples to draw during spatial sampling.}
 
-\item{method}{description}
+\item{method}{Character. The sampling method to use (e.g., "random", "stratified").}
 
-\item{strata_var}{description}
+\item{strata_var}{Character. The name of the variable to use for stratified sampling (optional).}
 
-\item{num_sim}{description}
+\item{num_sim}{Integer. The number of simulation iterations to run.}
 
-\item{use_dirinla}{description}
+\item{use_dirinla}{Logical. If \code{TRUE}, uses the \code{dirinla::dirinlareg()} function for model fitting;
+otherwise, uses \code{DirichletReg::DirichReg()}.}
 
-\item{tol0}{description}
+\item{tol0}{Numeric. A tolerance parameter for \code{dirinla::dirinlareg()}. Ignored if \code{use_dirinla} is \code{FALSE}.}
 
-\item{verbose}{description}
+\item{verbose}{Logical. If \code{TRUE}, prints additional information during model fitting and simulation.}
 
-\item{parallel}{description}
+\item{parallel}{Logical. If \code{TRUE}, runs simulations in parallel.}
 
-\item{n_cores}{description}
+\item{n_cores}{Integer. The number of cores to use for parallel processing. Defaults to 1.}
 }
 \value{
-description
+A simulation object containing the results of the simulation, including performance metrics
+(e.g., RMSE, MAE, Spearman rank correlation, KLD) for each iteration. The results are stored in
+a structured format for further analysis.
 }
 \description{
-Run simulation
+This function runs a simulation to evaluate the performance of compositional data models.
+It uses spatial sampling, fits a Dirichlet regression model, predicts compositional probabilities,
+and computes performance metrics such as RMSE, MAE, Spearman rank correlation, and KLD.
+}
+\details{
+The function performs the following steps:
+\enumerate{
+\item Unpacks \code{PackedSpatRaster} objects and ensures coordinate reference system consistency.
+\item Initializes a simulation object using the \code{SimEngine} package.
+\item Configures simulation levels and parameters, including the number of iterations and sampling method.
+\item Defines a simulation script that performs spatial sampling, model fitting, prediction, and metric computation.
+\item Runs the simulation and returns the results.
+}
 }

@@ -1,12 +1,17 @@
-#' Fit dirichlet regression model (via dirinla::dirinlareg() function)
+#' Fit a Dirichlet regression model
 #'
-#' @param data description
-#' @param formula description
-#' @param use_dirinla description
-#' @param tol0 description
-#' @param verbose description
+#' This function fits a Dirichlet regression model using either the `dirinla::dirinlareg()` 
+#' function or the `DirichletReg::DirichReg()` function, depending on the `use_dirinla` parameter.
 #'
-#' @return description
+#' @param data A data frame containing the input data. Must include columns with names 
+#'   starting with "alpha_sim" for the Dirichlet parameters.
+#' @param formula A formula specifying the regression model to be fitted.
+#' @param use_dirinla Logical. If `TRUE`, uses the `dirinla::dirinlareg()` function; 
+#'   otherwise, uses `DirichletReg::DirichReg()`.
+#' @param tol0 Numeric. A tolerance parameter for `dirinla::dirinlareg()`. Ignored if `use_dirinla` is `FALSE`.
+#' @param verbose Logical. If `TRUE`, prints additional information during model fitting.
+#'
+#' @return A fitted Dirichlet regression model object.
 #' @export
 fit_comp_dirichlet <- function(data, formula, use_dirinla = FALSE, tol0 = NULL,
                                verbose = FALSE) {
@@ -39,19 +44,23 @@ fit_comp_dirichlet <- function(data, formula, use_dirinla = FALSE, tol0 = NULL,
 }
 
 
-#' Sample the data and fit dirichlet regression model (via dirinla:: function)
+#' Sample data and fit a Dirichlet regression model
 #'
-#' @param data description
-#' @param n description
-#' @param method description
-#' @param bias_var description
-#' @param bias_thresh description
-#' @param clh_var description
-#' @param clh_iter description
-#' @param strata_var description
-#' @param formula description
+#' This function samples the input data and fits a Dirichlet regression model using 
+#' the `fit_comp_dirichlet()` function.
 #'
-#' @return description
+#' @param data A data frame or a `PackedSpatRaster` object containing the input data.
+#' @param n Integer. The number of samples to draw.
+#' @param method Character. The sampling method to use (e.g., "random", "stratified").
+#' @param bias_var Character. The name of the variable to use for biased sampling (optional).
+#' @param bias_thresh Numeric. A threshold for biased sampling (optional).
+#' @param clh_var Character. The name of the variable for conditional Latin hypercube sampling (optional).
+#' @param clh_iter Integer. The number of iterations for conditional Latin hypercube sampling (optional).
+#' @param strata_var Character. The name of the variable to use for stratified sampling (optional).
+#' @param formula A formula specifying the regression model to be fitted.
+#'
+#' @return A modified version of the input `data` object, including model coefficients 
+#'   and predicted substrate composition probabilities.
 #' @export
 sample_fit_comp_dirichlet <- function(data, n, method, bias_var = NULL,
                                       bias_thresh = NULL, clh_var = NULL,
@@ -82,12 +91,18 @@ sample_fit_comp_dirichlet <- function(data, n, method, bias_var = NULL,
 
 }
 
-#' Predict substrate composition values based on dirichlet regression model
+#' Predict substrate composition probabilities
 #'
-#' @param data description
-#' @param model description
+#' This function predicts substrate composition probabilities based on a fitted 
+#' Dirichlet regression model.
 #'
-#' @return description
+#' @param data A data frame or a `PackedSpatRaster`/`SpatRaster` object containing the input data.
+#' @param model A fitted Dirichlet regression model object, either of class 
+#'   `dirinlaregmodel` (from `dirinla`) or `DirichletRegModel` (from `DirichletReg`).
+#'
+#' @return A modified version of the input `data` object, including predicted 
+#'   substrate composition probabilities and model-estimated alpha values.
+#'   If the input is a `SpatRaster`, the output is a wrapped raster object.
 #' @export
 predict_comp_dirichlet <- function(data, model) {
 

@@ -2,18 +2,22 @@
 % Please edit documentation in R/fit_comp_dirichlet.R
 \name{predict_comp_dirichlet}
 \alias{predict_comp_dirichlet}
-\title{Predict substrate composition values based on dirichlet regression model}
+\title{Predict substrate composition probabilities}
 \usage{
 predict_comp_dirichlet(data, model)
 }
 \arguments{
-\item{data}{description}
+\item{data}{A data frame or a \code{PackedSpatRaster}/\code{SpatRaster} object containing the input data.}
 
-\item{model}{description}
+\item{model}{A fitted Dirichlet regression model object, either of class
+\code{dirinlaregmodel} (from \code{dirinla}) or \code{DirichletRegModel} (from \code{DirichletReg}).}
 }
 \value{
-description
+A modified version of the input \code{data} object, including predicted
+substrate composition probabilities and model-estimated alpha values.
+If the input is a \code{SpatRaster}, the output is a wrapped raster object.
 }
 \description{
-Predict substrate composition values based on dirichlet regression model
+This function predicts substrate composition probabilities based on a fitted
+Dirichlet regression model.
 }
