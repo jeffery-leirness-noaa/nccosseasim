@@ -64,7 +64,7 @@ simulate_comp_data <- function(
   }
 
   # create covariate polynomial rasters
-  if (is.null(layers) & !is.null(poly_degree)) {
+  if (is.null(layers) && !is.null(poly_degree)) {
     if (poly_degree > 1) {
       x_add <- purrr::map(2:poly_degree, \(deg) {
         x^deg |>
