@@ -80,8 +80,8 @@ sample_fit_comp_dirichlet <- function(
   mod <- fit_comp_dirichlet(df_sub, formula = formula)
 
   # model-estimated fixed effects
-  data$coef_hat <- purrr::map(mod$summary_fixed, .f = \(x) x$mean) |>
-    unlist()
+  # data$coef_hat <- purrr::map(mod$summary_fixed, .f = \(x) x$mean) |>
+  #   unlist()
 
   # predict substrate composition probabilities for entire study area
   data$data <- predict_comp_dirichlet(data$data, model = mod)
@@ -121,18 +121,38 @@ predict_comp_dirichlet <- function(data, model) {
     n_cat <- length(model$n.vars)
     coef_hat <- model$coefficients
   }
-  ds_hat <- dirinla::data_stack_dirich(
-    y = rep.int(NA, times = nrow(df) * n_cat),
-    covariates = dirinla::formula_list(model$formula),
-    data = df,
-    d = n_cat,
-    n = nrow(df)
-  )
-  eta_hat <- ds_hat %*% coef_hat
-  alpha_hat <- eta_hat |>
-    exp() |>
-    matrix(ncol = n_cat, byrow = TRUE)
-  p_hat <- alpha_hat / rowSums(alpha_hat) # expected values of Dirichlet distribution with parameters equal to alpha_hat
+  # ds_hat <- dirinla::data_stack_dirich(
+  #   y = rep.int(NA, times = nrow(df) * n_cat),
+  #   covariates = dirinla::formula_list(model$formula),
+  #   data = df,
+  #   d = n_cat,
+  #   n = nrow(df)
+  # )
+  # eta_hat <- ds_hat %*% coef_hat
+  # alpha_hat <- eta_hat |>
+  #   exp() |>
+  #   matrix(ncol = n_cat, byrow = TRUE)
+  # p_hat <- alpha_hat / rowSums(alpha_hat) # expected values of Dirichlet distribution with parameters equal to alpha_hat
+  form_components <- as.character(model$formula)[3] |>
+    stringr::str_split(pattern = stringr::fixed("|")) |>
+    purrr::pluck(1) |>
+    stringr::str_trim() |>
+    as.list()
+  coef_cat <- rep(seq_len(n_cat), model$n.vars)
+  x_hat <- split(coef_hat, coef_cat)
+  eta_hat <- matrix(NA, nrow = nrow(df), ncol = n_cat)
+  for (i in 1:n_cat) {
+    vars <- stringr::str_remove(form_components[[i]], pattern = "^1 \\+ ") |>
+      stringr::str_split(" \\+ ") |>
+      purrr::pluck(1)
+    design_matrix <- model.matrix(
+      ~.,
+      data = dplyr::select(df, dplyr::all_of(vars))
+    )
+    eta_hat[, i] <- design_matrix %*% x_hat[[i]]
+  }
+  alpha_hat <- exp(eta_hat)
+  p_hat <- alpha_hat / rowSums(alpha_hat) # expected values of Dirichlet distribution with parameters equal to alpha
 
   if (inherits(data, "SpatRaster")) {
     r_temp <- terra::subset(data, stringr::str_c("p_sim_", 1:n_cat))
