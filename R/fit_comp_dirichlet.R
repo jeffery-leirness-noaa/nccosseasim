@@ -6,11 +6,10 @@
 #' @param data A data frame containing the input data. Must include columns with names
 #'   starting with "alpha_sim" for the Dirichlet parameters.
 #' @param formula A formula specifying the regression model to be fitted.
-#' @param verbose Logical. If `TRUE`, prints additional information during model fitting.
 #'
 #' @return A fitted Dirichlet regression model object.
 #' @export
-fit_comp_dirichlet <- function(data, formula, verbose = FALSE) {
+fit_comp_dirichlet <- function(data, formula) {
   # simulate observed substrate compositions
   alpha_sub <- data |>
     dplyr::select(dplyr::starts_with("alpha_sim")) |>
@@ -102,60 +101,49 @@ sample_fit_comp_dirichlet <- function(
 #'   substrate composition probabilities and model-estimated alpha values.
 #'   If the input is a `SpatRaster`, the output is a wrapped raster object.
 #' @export
-predict_comp_dirichlet <- function(data, model) {
-  # if data is a PackedSpatRaster object, use terra::unwrap() to unpack it
-  if (inherits(data, "PackedSpatRaster")) {
-    data <- terra::unwrap(data)
+predict_comp_dirichlet <- function(object, new_data) {
+  # if new_data is a PackedSpatRaster object, use terra::unwrap() to unpack it
+  if (inherits(new_data, "PackedSpatRaster")) {
+    new_data <- terra::unwrap(new_data)
   }
 
   # predict substrate composition probabilities for entire study area
   # calculate expected values from model-estimated alpha values
-  if (inherits(data, "SpatRaster")) {
-    df <- data |>
+  if (inherits(new_data, "SpatRaster")) {
+    df <- new_data |>
       terra::as.data.frame(cells = TRUE, na.rm = TRUE) |>
       tibble::as_tibble()
   } else {
-    df <- data
+    df <- new_data
   }
-  if (inherits(model, "DirichletRegModel")) {
-    n_cat <- length(model$n.vars)
-    coef_hat <- model$coefficients
-  }
-  # ds_hat <- dirinla::data_stack_dirich(
-  #   y = rep.int(NA, times = nrow(df) * n_cat),
-  #   covariates = dirinla::formula_list(model$formula),
-  #   data = df,
-  #   d = n_cat,
-  #   n = nrow(df)
-  # )
-  # eta_hat <- ds_hat %*% coef_hat
-  # alpha_hat <- eta_hat |>
-  #   exp() |>
-  #   matrix(ncol = n_cat, byrow = TRUE)
-  # p_hat <- alpha_hat / rowSums(alpha_hat) # expected values of Dirichlet distribution with parameters equal to alpha_hat
-  form_components <- as.character(model$formula)[3] |>
-    stringr::str_split(pattern = stringr::fixed("|")) |>
-    purrr::pluck(1) |>
-    stringr::str_trim() |>
-    as.list()
-  coef_cat <- rep(seq_len(n_cat), model$n.vars)
-  x_hat <- split(coef_hat, coef_cat)
-  eta_hat <- matrix(NA, nrow = nrow(df), ncol = n_cat)
-  for (i in 1:n_cat) {
-    vars <- stringr::str_remove(form_components[[i]], pattern = "^1 \\+ ") |>
-      stringr::str_split(" \\+ ") |>
-      purrr::pluck(1)
-    design_matrix <- model.matrix(
-      ~.,
-      data = dplyr::select(df, dplyr::all_of(vars))
-    )
-    eta_hat[, i] <- design_matrix %*% x_hat[[i]]
-  }
-  alpha_hat <- exp(eta_hat)
-  p_hat <- alpha_hat / rowSums(alpha_hat) # expected values of Dirichlet distribution with parameters equal to alpha
+  # if (inherits(object, "DirichletRegModel")) {
+  #   n_cat <- length(object$n.vars)
+  #   coef_hat <- object$coefficients
+  # }
+  # form_components <- as.character(object$formula)[3] |>
+  #   stringr::str_split(pattern = stringr::fixed("|")) |>
+  #   purrr::pluck(1) |>
+  #   stringr::str_trim() |>
+  #   as.list()
+  # coef_cat <- rep(seq_len(n_cat), object$n.vars)
+  # x_hat <- split(coef_hat, coef_cat)
+  # eta_hat <- matrix(NA, nrow = nrow(df), ncol = n_cat)
+  # for (i in 1:n_cat) {
+  #   vars <- stringr::str_remove(form_components[[i]], pattern = "^1 \\+ ") |>
+  #     stringr::str_split(" \\+ ") |>
+  #     purrr::pluck(1)
+  #   design_matrix <- model.matrix(
+  #     ~.,
+  #     data = dplyr::select(df, dplyr::all_of(vars))
+  #   )
+  #   eta_hat[, i] <- design_matrix %*% x_hat[[i]]
+  # }
+  # alpha_hat <- exp(eta_hat)
+  # p_hat <- alpha_hat / rowSums(alpha_hat) # expected values of Dirichlet distribution with parameters equal to alpha
+  p_hat <- predict(object, newdata = df, mu = TRUE)
 
-  if (inherits(data, "SpatRaster")) {
-    r_temp <- terra::subset(data, stringr::str_c("p_sim_", 1:n_cat))
+  if (inherits(new_data, "SpatRaster")) {
+    r_temp <- terra::subset(new_data, stringr::str_c("p_sim_", 1:n_cat))
     terra::values(r_temp) <- NA
     r_alpha_hat <- r_p_hat <- r_temp
     for (i in 1:n_cat) {
@@ -164,10 +152,10 @@ predict_comp_dirichlet <- function(data, model) {
     }
     names(r_alpha_hat) <- stringr::str_c("alpha_hat_", 1:n_cat)
     names(r_p_hat) <- stringr::str_c("p_hat_", 1:n_cat)
-    c(data, r_alpha_hat, r_p_hat) |>
+    c(new_data, r_alpha_hat, r_p_hat) |>
       terra::wrap()
   } else {
-    data |>
+    new_data |>
       dplyr::bind_cols(tibble::as_tibble(
         alpha_hat,
         .name_repair = ~ stringr::str_c("alpha_hat_", 1:n_cat)

@@ -68,7 +68,7 @@ simulate_comp_data <- function(
     if (poly_degree > 1) {
       x_add <- purrr::map(2:poly_degree, \(deg) {
         x^deg |>
-          stats::setNames(nm = stringr::str_c(names(x), "^", deg))
+          stats::setNames(nm = stringr::str_c(names(x), "_power_", deg))
       }) |>
         terra::rast()
       x <- c(x, x_add)
