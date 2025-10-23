@@ -4,31 +4,18 @@
 \alias{fit_comp_dirichlet}
 \title{Fit a Dirichlet regression model}
 \usage{
-fit_comp_dirichlet(
-  data,
-  formula,
-  use_dirinla = FALSE,
-  tol0 = NULL,
-  verbose = FALSE
-)
+fit_comp_dirichlet(data, formula)
 }
 \arguments{
 \item{data}{A data frame containing the input data. Must include columns with names
 starting with "alpha_sim" for the Dirichlet parameters.}
 
 \item{formula}{A formula specifying the regression model to be fitted.}
-
-\item{use_dirinla}{Logical. If \code{TRUE}, uses the \code{dirinla::dirinlareg()} function;
-otherwise, uses \code{DirichletReg::DirichReg()}.}
-
-\item{tol0}{Numeric. A tolerance parameter for \code{dirinla::dirinlareg()}. Ignored if \code{use_dirinla} is \code{FALSE}.}
-
-\item{verbose}{Logical. If \code{TRUE}, prints additional information during model fitting.}
 }
 \value{
 A fitted Dirichlet regression model object.
 }
 \description{
-This function fits a Dirichlet regression model using either the \code{dirinla::dirinlareg()}
-function or the \code{DirichletReg::DirichReg()} function, depending on the \code{use_dirinla} parameter.
+This function fits a Dirichlet regression model using the \code{DirichletReg::DirichReg()}
+function.
 }

@@ -12,8 +12,6 @@ run_simulation(
   method,
   strata_var = NULL,
   num_sim,
-  use_dirinla = TRUE,
-  tol0 = NULL,
   verbose = FALSE,
   parallel = FALSE,
   n_cores = 1L
@@ -35,11 +33,6 @@ it will be transformed to match the coordinate reference system of \code{sim_dat
 \item{strata_var}{Character. The name of the variable to use for stratified sampling (optional).}
 
 \item{num_sim}{Integer. The number of simulation iterations to run.}
-
-\item{use_dirinla}{Logical. If \code{TRUE}, uses the \code{dirinla::dirinlareg()} function for model fitting;
-otherwise, uses \code{DirichletReg::DirichReg()}.}
-
-\item{tol0}{Numeric. A tolerance parameter for \code{dirinla::dirinlareg()}. Ignored if \code{use_dirinla} is \code{FALSE}.}
 
 \item{verbose}{Logical. If \code{TRUE}, prints additional information during model fitting and simulation.}
 

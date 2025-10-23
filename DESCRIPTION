@@ -16,7 +16,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     DirichletReg,
-    dirinla (>= 1.0.5),
     dplyr,
     pipebind,
     purrr,
@@ -30,6 +29,5 @@ Imports:
     tidyr
 Remotes:  
     jeffery-leirness-noaa/rastersample,
-    inlabru-org/dirinla
 URL: https://github.com/jeffery-leirness-noaa/nccosseasim
 BugReports: https://github.com/jeffery-leirness-noaa/nccosseasim/issues

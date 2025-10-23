@@ -4,13 +4,12 @@
 \alias{predict_comp_dirichlet}
 \title{Predict substrate composition probabilities}
 \usage{
-predict_comp_dirichlet(data, model)
+predict_comp_dirichlet(object, new_data)
 }
 \arguments{
-\item{data}{A data frame or a \code{PackedSpatRaster}/\code{SpatRaster} object containing the input data.}
+\item{object}{A fitted Dirichlet regression model object of class \code{DirichletRegModel} (from \code{DirichletReg}).}
 
-\item{model}{A fitted Dirichlet regression model object, either of class
-\code{dirinlaregmodel} (from \code{dirinla}) or \code{DirichletRegModel} (from \code{DirichletReg}).}
+\item{new_data}{A data frame or a \code{PackedSpatRaster}/\code{SpatRaster} object containing the input data.}
 }
 \value{
 A modified version of the input \code{data} object, including predicted
