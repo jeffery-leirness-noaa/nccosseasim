@@ -15,11 +15,7 @@ fit_comp_dirichlet <- function(data, formula) {
     dplyr::select(dplyr::starts_with("alpha_sim")) |>
     as.matrix()
   y_sub <- DirichletReg::rdirichlet(nrow(data), alpha = alpha_sub)
-  # may need to use this data transformation.
-  # note that the models ability to estimate very low substrate composition
-  # probabilities may be affected by this!
   y_sub <- DirichletReg::DR_data(y_sub)
-  # colnames(y_sub) <- paste0("y", 1:ncol(y_sub))
 
   # fit the model
   data$y <- y_sub
@@ -116,50 +112,20 @@ predict_comp_dirichlet <- function(object, new_data) {
   } else {
     df <- new_data
   }
-  # if (inherits(object, "DirichletRegModel")) {
-  #   n_cat <- length(object$n.vars)
-  #   coef_hat <- object$coefficients
-  # }
-  # form_components <- as.character(object$formula)[3] |>
-  #   stringr::str_split(pattern = stringr::fixed("|")) |>
-  #   purrr::pluck(1) |>
-  #   stringr::str_trim() |>
-  #   as.list()
-  # coef_cat <- rep(seq_len(n_cat), object$n.vars)
-  # x_hat <- split(coef_hat, coef_cat)
-  # eta_hat <- matrix(NA, nrow = nrow(df), ncol = n_cat)
-  # for (i in 1:n_cat) {
-  #   vars <- stringr::str_remove(form_components[[i]], pattern = "^1 \\+ ") |>
-  #     stringr::str_split(" \\+ ") |>
-  #     purrr::pluck(1)
-  #   design_matrix <- model.matrix(
-  #     ~.,
-  #     data = dplyr::select(df, dplyr::all_of(vars))
-  #   )
-  #   eta_hat[, i] <- design_matrix %*% x_hat[[i]]
-  # }
-  # alpha_hat <- exp(eta_hat)
-  # p_hat <- alpha_hat / rowSums(alpha_hat) # expected values of Dirichlet distribution with parameters equal to alpha
   p_hat <- predict(object, newdata = df, mu = TRUE)
 
   if (inherits(new_data, "SpatRaster")) {
     r_temp <- terra::subset(new_data, stringr::str_c("p_sim_", 1:n_cat))
     terra::values(r_temp) <- NA
-    r_alpha_hat <- r_p_hat <- r_temp
+    r_p_hat <- r_temp
     for (i in 1:n_cat) {
-      r_alpha_hat[[i]][df$cell] <- alpha_hat[, i]
       r_p_hat[[i]][df$cell] <- p_hat[, i]
     }
-    names(r_alpha_hat) <- stringr::str_c("alpha_hat_", 1:n_cat)
     names(r_p_hat) <- stringr::str_c("p_hat_", 1:n_cat)
-    c(new_data, r_alpha_hat, r_p_hat) |>
+    c(new_data, r_p_hat) |>
       terra::wrap()
   } else {
     new_data |>
-      dplyr::bind_cols(tibble::as_tibble(
-        alpha_hat,
-        .name_repair = ~ stringr::str_c("alpha_hat_", 1:n_cat)
-      )) |>
       dplyr::bind_cols(tibble::as_tibble(
         p_hat,
         .name_repair = ~ stringr::str_c("p_hat_", 1:n_cat)
