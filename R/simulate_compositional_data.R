@@ -1,37 +1,28 @@
-#' Simulate compositional data from a Dirichlet likelihood
+#' Simulate compositional raster data
 #'
-#' @description
-#' Simulates compositional probabilities (`p_sim*`) for `d` components from
-#' selected covariate raster layers. For each component a coefficient vector
-#' (intercept + covariates) is drawn i.i.d. `N(0, 2^2)`, linear predictors are
-#' exponentiated (`.alpha_sim*`), then normalized to the simplex (`.p_sim*`).
+#' @description Generate Dirichlet component parameters (`.alpha_sim*`) and
+#' normalized probabilities (`.p_sim*`) for `d` components from selected raster
+#' covariates.
 #'
 #' @details
 #' Steps:
-#' 1. Unwraps a `PackedSpatRaster` if supplied.
-#' 2. Selects covariate layers (all, or random subset when `n_cov_sim` given).
-#' 3. Extracts covariate values (`terra::values(mat = TRUE)`).
-#' 4. Builds feature matrix: intercept + covariates.
-#' 5. Draws a coefficient matrix (`n_features x d`).
-#' 6. Computes linear predictors for rows without missing covariates.
-#' 7. Applies `exp` to get `.alpha_sim*` and row-normalizes to obtain `.p_sim*`.
-#' 8. Returns both `.alpha_sim*` and `.p_sim*` as a wrapped raster or tibble.
+#' 1. (Optional) Unwrap packed raster.
+#' 2. Select covariate subset (all, explicit `layers`, or random `n_cov_sim`).
+#' 3. Construct feature matrix (Intercept + covariates).
+#' 4. Draw coefficient matrix i.i.d. Normal.
+#' 5. Compute linear predictors, exponentiate to alpha.
+#' 6. Normalize alpha rows to the simplex for probabilities.
+#' 7. Return list with metadata, coefficients, formula, and data.
 #'
-#' Rows with any `NA` in covariates yield `NA` in all component probabilities.
+#' Rows with any NA in covariates produce NA across all components.
 #'
-#' Memory: Allocates feature matrix (`ncell * n_features`) and probability
-#' matrix (`ncell * d`).
-#'
-#' @param x A `SpatRaster` or `PackedSpatRaster` containing covariate layers.
-#' @param d Integer (>= 2). Number of compositional components.
-#' @param layers Optional character or numeric vector of layer names/indices to
-#'   use. If `NULL`, all layers are used or random subset is chosen via
-#'   `n_cov_sim`.
-#' @param n_cov_sim Optional integer: number of layers randomly sampled when
-#'   `layers` is `NULL`.
-#' @param as_raster Logical; if `TRUE` returns a wrapped `SpatRaster` with
-#'   probability layers. Otherwise a tibble.
-#' @param seed Optional integer seed for reproducibility.
+#' @param x A `SpatRaster` or `PackedSpatRaster` of covariates.
+#' @param d Integer >= 2; number of components.
+#' @param layers Optional vector of names/indices to use.
+#' @param n_cov_sim Optional integer; random number of layers sampled if
+#' `layers` is NULL.
+#' @param as_raster Logical; if TRUE return wrapped raster (alpha + prob layers).
+#' @param seed Optional integer seed.
 #'
 #' @return A list with:
 #' * `d` Number of components.
@@ -44,21 +35,17 @@
 #' * `data` Raster (wrapped) or tibble with columns/layers `.alpha_sim*` and
 #'     `p_sim*`.
 #'
-#' @seealso [prepare_data()], [terra::values()], [stats::rnorm()]
+#' @seealso [prepare_data()], [fit_compositional_data()]
 #'
 #' @examples
 #' \donttest{
 #' library(terra)
 #' r <- rast(system.file("ex/elev.tif", package = "terra"))
-#' sim <- simulate_comp_data(x = r, d = 3, as_raster = TRUE, seed = 123)
-#' sim$coef_sim
+#' sim <- simulate_compositional_data(r, d = 3, as_raster = TRUE, seed = 42)
 #' names(sim$data)
+#' sim$coef_sim
 #' }
 #'
-#' @importFrom terra unwrap subset values rast wrap nlyr
-#' @importFrom stats rnorm as.formula
-#' @importFrom tibble tibble lst as_tibble
-#' @importFrom dplyr bind_cols
 #' @export
 simulate_compositional_data <- function(
   x,
@@ -74,13 +61,10 @@ simulate_compositional_data <- function(
   if (inherits(x, "PackedSpatRaster")) {
     x <- terra::unwrap(x)
   }
-  if (!is.integer(d)) {
-    d <- as.integer(d)
-  }
+  d <- as.integer(d)
   if (d < 2L) {
     stop("d must be >= 2")
   }
-
   n_all <- terra::nlyr(x)
   if (is.null(layers)) {
     if (!is.null(n_cov_sim)) {
@@ -93,14 +77,11 @@ simulate_compositional_data <- function(
     }
   }
   layer_names <- if (is.numeric(layers)) names(x)[layers] else layers
-
   vals <- terra::values(terra::subset(x, layers), mat = TRUE)
   n_cells <- nrow(vals)
-
   features <- cbind(Intercept = rep(1, n_cells), vals)
   valid <- rowSums(is.na(features[, -1L, drop = FALSE])) == 0
   n_feat <- ncol(features)
-
   betas <- matrix(
     stats::rnorm(
       n_feat * d,
@@ -112,19 +93,15 @@ simulate_compositional_data <- function(
   )
   rownames(betas) <- c("Intercept", layer_names)
   colnames(betas) <- paste0("comp", seq_len(d))
-
   eta_sim <- matrix(NA_real_, nrow = n_cells, ncol = d)
   eta_sim[valid, ] <- features[valid, , drop = FALSE] %*% betas
-
   alpha_sim <- exp(eta_sim)
   row_sums <- rowSums(alpha_sim, na.rm = TRUE)
   p_sim <- alpha_sim / row_sums
-
   base_terms <- paste(c("1", layer_names), collapse = " + ")
   form_sim <- stats::as.formula(
     paste("y ~", paste(rep(base_terms, d), collapse = " | "))
   )
-
   if (as_raster) {
     out <- terra::rast(terra::subset(x, layers), nlyr = 2 * d)
     terra::values(out) <- cbind(alpha_sim, p_sim)
@@ -144,7 +121,6 @@ simulate_compositional_data <- function(
       )
     data_out <- df
   }
-
   tibble::lst(
     d = d,
     layers = layers,

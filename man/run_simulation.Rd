@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_simulation.R
 \name{run_simulation}
 \alias{run_simulation}
-\title{Run simulation}
+\title{Run compositional model simulation}
 \usage{
 run_simulation(
   sim_data,
@@ -18,45 +18,57 @@ run_simulation(
 )
 }
 \arguments{
-\item{sim_data}{A \code{SpatRaster} or \code{PackedSpatRaster} object containing the simulated data.
-If it is a \code{PackedSpatRaster}, it will be unpacked using \code{terra::unwrap()}.}
+\item{sim_data}{(Packed) \code{SpatRaster} containing simulated \verb{.p_sim*} layers
+and covariates used for fitting.}
 
-\item{sites}{An optional \code{sf} object containing spatial site locations. If provided,
-it will be transformed to match the coordinate reference system of \code{sim_data}.}
+\item{sites}{Optional \code{sf} point object for site locations (transformed to
+\code{sim_data} CRS).}
 
-\item{formula}{A formula specifying the regression model to be fitted.}
+\item{formula}{Model formula passed to \code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}.}
 
-\item{n}{Integer. The number of samples to draw during spatial sampling.}
+\item{n}{Sample size per iteration.}
 
-\item{method}{Character. The sampling method to use (e.g., "random", "stratified").}
+\item{method}{Sampling method passed to \code{\link[rastersample:spatial_sample]{rastersample::spatial_sample()}}.}
 
-\item{strata_var}{Character. The name of the variable to use for stratified sampling (optional).}
+\item{strata_var}{Optional stratification variable name (character).}
 
-\item{num_sim}{Integer. The number of simulation iterations to run.}
+\item{num_sim}{Number of simulation iterations.}
 
-\item{verbose}{Logical. If \code{TRUE}, prints additional information during model fitting and simulation.}
+\item{verbose}{Logical; if TRUE prints fitting progress (may slow runs).}
 
-\item{parallel}{Logical. If \code{TRUE}, runs simulations in parallel.}
+\item{parallel}{Logical; if TRUE enables parallel execution via SimEngine.}
 
-\item{n_cores}{Integer. The number of cores to use for parallel processing. Defaults to 1.}
+\item{n_cores}{Integer; number of cores (ignored if \code{parallel = FALSE}).}
 }
 \value{
-A simulation object containing the results of the simulation, including performance metrics
-(e.g., RMSE, MAE, Spearman rank correlation, KLD) for each iteration. The results are stored in
-a structured format for further analysis.
+A \code{SimEngine} simulation result (after \code{SimEngine::run()}), containing
+metric summaries (\verb{rmse_*}, \verb{mae_*}, \verb{rho_*}, \verb{kld_*}) and a \code{.complex}
+list with full per-component metric tibble.
 }
 \description{
-This function runs a simulation to evaluate the performance of compositional data models.
-It uses spatial sampling, fits a Dirichlet regression model, predicts compositional probabilities,
-and computes performance metrics such as RMSE, MAE, Spearman rank correlation, and KLD.
+Execute repeated spatial sampling, model fitting, prediction,
+and metric computation using \link[SimEngine:SimEngine-package]{SimEngine::SimEngine}. Returns a \code{SimEngine} simulation
+object with summarized metrics per iteration.
 }
 \details{
-The function performs the following steps:
+Each iteration:
 \enumerate{
-\item Unpacks \code{PackedSpatRaster} objects and ensures coordinate reference system consistency.
-\item Initializes a simulation object using the \code{SimEngine} package.
-\item Configures simulation levels and parameters, including the number of iterations and sampling method.
-\item Defines a simulation script that performs spatial sampling, model fitting, prediction, and metric computation.
-\item Runs the simulation and returns the results.
+\item Sample spatial locations.
+\item Fit Dirichlet regression (using internal fit/predict wrappers).
+\item Predict compositions for full raster.
+\item Compute metrics via \code{\link[=metrics_comp]{metrics_comp()}} (component-wise + summary stats).
 }
+}
+\examples{
+\donttest{
+# Requires SimEngine and rastersample packages.
+# sim_obj <- run_simulation(sim_data = sim$data, formula = y ~ 1,
+#                           n = 50, method = "random",
+#                           num_sim = 10, parallel = FALSE)
+}
+
+}
+\seealso{
+\code{\link[=simulate_compositional_data]{simulate_compositional_data()}}, \code{\link[=fit_compositional_data]{fit_compositional_data()}},
+\code{\link[=predict_compositional_data]{predict_compositional_data()}}, \code{\link[=metrics_comp]{metrics_comp()}}
 }

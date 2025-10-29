@@ -1,33 +1,32 @@
-#' Plot simulated compositional data
+#' Plot simulated compositional rasters
 #'
-#' This function generates a plot of simulated compositional data stored in a `SpatRaster` object.
-#' It extracts the relevant layers from the raster object and visualizes them as a series of plots.
+#' @description This function generates a plot of simulated compositional data
+#' stored in a `SpatRaster` object. It extracts the relevant layers from the
+#' raster object and visualizes them as a series of plots.
 #'
-#' @param sim A list containing the simulated data. The `sim$data` element must be a `SpatRaster`
-#'   or `PackedSpatRaster` object. The `sim$d` element specifies the number of compositional
-#'   components to plot.
+#' @param sim A list containing the simulated data. The `sim$data` element must
+#'   be a `SpatRaster` or `PackedSpatRaster` object. The `sim$d` element
+#'   specifies the number of compositional components to plot.
 #'
-#' @return A plot of the compositional data layers. The function does not return a value;
-#'   it generates a plot as a side effect.
+#' @return Invisibly returns `sim`. Produces a multi-panel plot as side effect.
 #'
-#' @details If `sim$data` is a `PackedSpatRaster` object, it is first unpacked using
-#'   `terra::unwrap()`. The function ensures that `sim$data` is a `SpatRaster` object
-#'   before proceeding. The layers to be plotted are identified by their names, which
-#'   are expected to follow the pattern `"p_sim1"`, `"p_sim2"`, ..., `"p_simd"`,
-#'   where `d` is the number of components.
+#' @examples
+#' \donttest{
+#' library(terra)
+#' r <- rast(system.file("ex/elev.tif", package = "terra"))
+#' sim <- simulate_compositional_data(r, d = 3, as_raster = TRUE)
+#' plot_compositional_data(sim)
+#' }
 #'
+#' @seealso [simulate_compositional_data()]
 #' @export
 plot_compositional_data <- function(sim) {
-  # if sim$data is a PackedSpatRaster object, use terra::unwrap() to unpack it
   if (inherits(sim$data, "PackedSpatRaster")) {
     sim$data <- terra::unwrap(sim$data)
   }
-
-  # error if sim$data is not a SpatRaster object
   stopifnot(inherits(sim$data, "SpatRaster"))
-
-  # create plot
   sim$data |>
-    terra::subset(subset = stringr::str_c(".p_sim", 1:sim$d)) |>
+    terra::subset(subset = stringr::str_c(".p_sim", seq_len(sim$d))) |>
     terra::plot(range = c(0, 1), nr = 1)
+  invisible(sim)
 }

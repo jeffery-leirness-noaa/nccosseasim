@@ -2,7 +2,7 @@
 % Please edit documentation in R/metrics_comp.R
 \name{metrics_comp}
 \alias{metrics_comp}
-\title{Performance metrics for compositional data}
+\title{Metrics for compositional predictions}
 \usage{
 metrics_comp(truth, estimate, metric = "all", summarize = FALSE)
 }
@@ -30,8 +30,28 @@ contains one row per metric. If \code{summarize = FALSE}, the tibble contains de
 results for each component.
 }
 \description{
-This function computes various performance metrics for compositional data, such as
-root mean square error (RMSE), mean absolute error (MAE), Spearman rank correlation (rho),
-Kullback-Leibler divergence (KLD), and mean log ratio (MLR). It can compute a single metric
-or all metrics at once.
+Compute performance metrics between true and estimated
+compositions (rows sum to 1): RMSE, MAE, Spearman correlation (per component),
+Kullback–Leibler divergence (component-wise), and Mean Log Ratio.
+}
+\details{
+Input matrices/data frames must have identical dimensions and component order.
+Each metric is computed component-wise; when \code{summarize = TRUE}, the mean
+across components is returned. No re-scaling to enforce unity is performed.
+
+NA handling: rows containing NA in either \code{truth} or \code{estimate} for a given
+component contribute NA to that component's metric before aggregation.
+
+Experimental: KLD and MLR are marked experimental (see notes).
+}
+\examples{
+truth <- matrix(c(0.2,0.3,0.5,
+                  0.25,0.25,0.5), nrow = 2, byrow = TRUE)
+est   <- truth + matrix(c(0,0.05,-0.05,
+                          0.02,-0.02,0), nrow = 2, byrow = TRUE)
+metrics_comp(truth, est, metric = "all", summarize = FALSE)
+
+}
+\seealso{
+\code{\link[=predict_compositional_data]{predict_compositional_data()}}
 }

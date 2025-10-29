@@ -1,15 +1,38 @@
 #' Fit a Dirichlet regression model
 #'
-#' This function fits a Dirichlet regression model using the `DirichletReg::DirichReg()`
-#' function.
+#' @description Generates a compositional response from simulated Dirichlet
+#' parameters (.alpha_sim*) and fits a Dirichlet regression using
+#' [DirichletReg::DirichReg()].
 #'
-#' @param data A data frame containing the input data. Must include columns with names
-#'   starting with "alpha_sim" for the Dirichlet parameters.
-#' @param formula A formula specifying the regression model to be fitted.
+#' @details
+#' Steps:
+#' 1. Extract columns starting with `.alpha_sim` and form an alpha matrix.
+#' 2. Draw one Dirichlet composition per row.
+#' 3. Attach the composition as column `y` (a `DirichletRegData` object).
+#' 4. Fit the supplied formula with `DirichletReg::DirichReg()`.
 #'
-#' @return A fitted Dirichlet regression model object.
+#' The formula is passed unmodified. Provide a multi-part (|) formula for
+#' component-specific predictors if desired.
+#'
+#' @param formula A model formula acceptable to [DirichletReg::DirichReg()].
+#' @param data A data frame containing columns `.alpha_sim1`, `.alpha_sim2`, ... .
+#'
+#' @return A `DirichletRegModel` object.
+#'
+#' @seealso [simulate_compositional_data()], [predict_compositional_data()]
+#'
+#' @examples
+#' \donttest{
+#' # Assume sim is result of simulate_compositional_data(as_raster = FALSE)
+#' # with columns .alpha_sim1:.alpha_sim3
+#' # formula with common predictors for all components:
+#' # y ~ x1 + x2
+#' # (y will be created internally from .alpha_sim*)
+#' # fit_compositional_data(sim, y ~ 1)
+#' }
+#'
 #' @export
-fit_compositional_data <- function(data, formula) {
+fit_compositional_data <- function(formula, data) {
   # simulate observed substrate compositions
   alpha_sub <- data |>
     dplyr::select(dplyr::starts_with(".alpha_sim")) |>

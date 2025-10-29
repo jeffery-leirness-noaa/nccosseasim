@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_compositional_data.R
 \name{simulate_compositional_data}
 \alias{simulate_compositional_data}
-\title{Simulate compositional data from a Dirichlet likelihood}
+\title{Simulate compositional raster data}
 \usage{
 simulate_compositional_data(
   x,
@@ -14,21 +14,18 @@ simulate_compositional_data(
 )
 }
 \arguments{
-\item{x}{A \code{SpatRaster} or \code{PackedSpatRaster} containing covariate layers.}
+\item{x}{A \code{SpatRaster} or \code{PackedSpatRaster} of covariates.}
 
-\item{d}{Integer (>= 2). Number of compositional components.}
+\item{d}{Integer >= 2; number of components.}
 
-\item{layers}{Optional character or numeric vector of layer names/indices to
-use. If \code{NULL}, all layers are used or random subset is chosen via
-\code{n_cov_sim}.}
+\item{layers}{Optional vector of names/indices to use.}
 
-\item{n_cov_sim}{Optional integer: number of layers randomly sampled when
-\code{layers} is \code{NULL}.}
+\item{n_cov_sim}{Optional integer; random number of layers sampled if
+\code{layers} is NULL.}
 
-\item{as_raster}{Logical; if \code{TRUE} returns a wrapped \code{SpatRaster} with
-probability layers. Otherwise a tibble.}
+\item{as_raster}{Logical; if TRUE return wrapped raster (alpha + prob layers).}
 
-\item{seed}{Optional integer seed for reproducibility.}
+\item{seed}{Optional integer seed.}
 }
 \value{
 A list with:
@@ -45,39 +42,34 @@ A list with:
 }
 }
 \description{
-Simulates compositional probabilities (\verb{p_sim*}) for \code{d} components from
-selected covariate raster layers. For each component a coefficient vector
-(intercept + covariates) is drawn i.i.d. \code{N(0, 2^2)}, linear predictors are
-exponentiated (\verb{.alpha_sim*}), then normalized to the simplex (\verb{.p_sim*}).
+Generate Dirichlet component parameters (\verb{.alpha_sim*}) and
+normalized probabilities (\verb{.p_sim*}) for \code{d} components from selected raster
+covariates.
 }
 \details{
 Steps:
 \enumerate{
-\item Unwraps a \code{PackedSpatRaster} if supplied.
-\item Selects covariate layers (all, or random subset when \code{n_cov_sim} given).
-\item Extracts covariate values (\code{terra::values(mat = TRUE)}).
-\item Builds feature matrix: intercept + covariates.
-\item Draws a coefficient matrix (\verb{n_features x d}).
-\item Computes linear predictors for rows without missing covariates.
-\item Applies \code{exp} to get \verb{.alpha_sim*} and row-normalizes to obtain \verb{.p_sim*}.
-\item Returns both \verb{.alpha_sim*} and \verb{.p_sim*} as a wrapped raster or tibble.
+\item (Optional) Unwrap packed raster.
+\item Select covariate subset (all, explicit \code{layers}, or random \code{n_cov_sim}).
+\item Construct feature matrix (Intercept + covariates).
+\item Draw coefficient matrix i.i.d. Normal.
+\item Compute linear predictors, exponentiate to alpha.
+\item Normalize alpha rows to the simplex for probabilities.
+\item Return list with metadata, coefficients, formula, and data.
 }
 
-Rows with any \code{NA} in covariates yield \code{NA} in all component probabilities.
-
-Memory: Allocates feature matrix (\code{ncell * n_features}) and probability
-matrix (\code{ncell * d}).
+Rows with any NA in covariates produce NA across all components.
 }
 \examples{
 \donttest{
 library(terra)
 r <- rast(system.file("ex/elev.tif", package = "terra"))
-sim <- simulate_comp_data(x = r, d = 3, as_raster = TRUE, seed = 123)
-sim$coef_sim
+sim <- simulate_compositional_data(r, d = 3, as_raster = TRUE, seed = 42)
 names(sim$data)
+sim$coef_sim
 }
 
 }
 \seealso{
-\code{\link[=prepare_data]{prepare_data()}}, \code{\link[terra:values]{terra::values()}}, \code{\link[stats:Normal]{stats::rnorm()}}
+\code{\link[=prepare_data]{prepare_data()}}, \code{\link[=fit_compositional_data]{fit_compositional_data()}}
 }

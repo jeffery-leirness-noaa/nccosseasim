@@ -1,9 +1,18 @@
-#' Performance metrics for compositional data
+#' Metrics for compositional predictions
 #'
-#' This function computes various performance metrics for compositional data, such as
-#' root mean square error (RMSE), mean absolute error (MAE), Spearman rank correlation (rho),
-#' Kullback-Leibler divergence (KLD), and mean log ratio (MLR). It can compute a single metric
-#' or all metrics at once.
+#' @description Compute performance metrics between true and estimated
+#' compositions (rows sum to 1): RMSE, MAE, Spearman correlation (per component),
+#' Kullback–Leibler divergence (component-wise), and Mean Log Ratio.
+#'
+#' @details
+#' Input matrices/data frames must have identical dimensions and component order.
+#' Each metric is computed component-wise; when `summarize = TRUE`, the mean
+#' across components is returned. No re-scaling to enforce unity is performed.
+#'
+#' NA handling: rows containing NA in either `truth` or `estimate` for a given
+#' component contribute NA to that component's metric before aggregation.
+#'
+#' Experimental: KLD and MLR are marked experimental (see notes).
 #'
 #' @param truth A matrix or data frame of true values for the compositional data.
 #' @param estimate A matrix or data frame of estimated values for the compositional data.
@@ -20,6 +29,16 @@
 #' @return A tibble containing the computed metric(s). If `summarize = TRUE`, the tibble
 #'   contains one row per metric. If `summarize = FALSE`, the tibble contains detailed
 #'   results for each component.
+#'
+#' @seealso [predict_compositional_data()]
+#'
+#' @examples
+#' truth <- matrix(c(0.2,0.3,0.5,
+#'                   0.25,0.25,0.5), nrow = 2, byrow = TRUE)
+#' est   <- truth + matrix(c(0,0.05,-0.05,
+#'                           0.02,-0.02,0), nrow = 2, byrow = TRUE)
+#' metrics_comp(truth, est, metric = "all", summarize = FALSE)
+#'
 #' @export
 metrics_comp <- function(truth, estimate, metric = "all", summarize = FALSE) {
   if (metric == "rmse") {
@@ -41,37 +60,22 @@ metrics_comp <- function(truth, estimate, metric = "all", summarize = FALSE) {
       mlr_comp(truth, estimate = estimate, summarize = summarize)
     )
   } else {
-    stop(
-      "Invalid metric argument. Must be one of: 'rmse', 'mae', 'rho', 'kld', 'mlr', or 'all'"
-    )
+    stop("metric must be one of: rmse, mae, rho, kld, mlr, all")
   }
 }
 
-#' Root Mean Square Error (RMSE) for compositional data
-#'
-#' This function computes the RMSE between true and estimated values for compositional data.
-#'
-#' @param truth A matrix or data frame of true values.
-#' @param estimate A matrix or data frame of estimated values.
-#' @param summarize Logical. If `TRUE`, returns a single summarized RMSE value.
-#'   If `FALSE`, returns RMSE values for each component.
-#'
-#' @return A tibble containing the RMSE values. If `summarize = TRUE`, the tibble contains
-#'   one row with the mean RMSE. If `summarize = FALSE`, the tibble contains detailed
-#'   RMSE values for each component.
-#' @importFrom rlang .data
 rmse_comp <- function(truth, estimate, summarize = FALSE) {
   m <- (truth - estimate)^2 |>
-    apply(MARGIN = 2, FUN = mean) |>
+    apply(2, mean, na.rm = TRUE) |>
     sqrt()
   if (summarize) {
-    tibble::tibble(.metric = "rmse", .estimate = mean(m))
+    tibble::tibble(.metric = "rmse", .estimate = mean(m, na.rm = TRUE))
   } else {
     tibble::tibble(.metric = "rmse", .estimate = m) |>
-      dplyr::mutate(id = 1:dplyr::n()) |>
+      dplyr::mutate(id = dplyr::row_number()) |>
       tidyr::pivot_wider(
-        names_from = .data$id,
-        values_from = .data$.estimate,
+        names_from = id,
+        values_from = .estimate,
         names_prefix = ".estimate_"
       )
   }
@@ -91,17 +95,16 @@ rmse_comp <- function(truth, estimate, summarize = FALSE) {
 #'   MAE values for each component.
 #' @importFrom rlang .data
 mae_comp <- function(truth, estimate, summarize = FALSE) {
-  m <- (truth - estimate) |>
-    abs() |>
-    apply(MARGIN = 2, FUN = mean)
+  m <- abs(truth - estimate) |>
+    apply(2, mean, na.rm = TRUE)
   if (summarize) {
-    tibble::tibble(.metric = "mae", .estimate = mean(m))
+    tibble::tibble(.metric = "mae", .estimate = mean(m, na.rm = TRUE))
   } else {
     tibble::tibble(.metric = "mae", .estimate = m) |>
-      dplyr::mutate(id = 1:dplyr::n()) |>
+      dplyr::mutate(id = dplyr::row_number()) |>
       tidyr::pivot_wider(
-        names_from = .data$id,
-        values_from = .data$.estimate,
+        names_from = id,
+        values_from = .estimate,
         names_prefix = ".estimate_"
       )
   }
@@ -122,16 +125,21 @@ mae_comp <- function(truth, estimate, summarize = FALSE) {
 #'   detailed correlation values for each component.
 #' @importFrom rlang .data
 rho_comp <- function(truth, estimate, summarize = FALSE) {
-  m <- stats::cor(truth, estimate, use = "complete.obs", method = "spearman") |>
+  m <- stats::cor(
+    truth,
+    estimate,
+    use = "complete.obs",
+    method = "spearman"
+  ) |>
     diag()
   if (summarize) {
-    tibble::tibble(.metric = "rho", .estimate = mean(m))
+    tibble::tibble(.metric = "rho", .estimate = mean(m, na.rm = TRUE))
   } else {
     tibble::tibble(.metric = "rho", .estimate = m) |>
-      dplyr::mutate(id = 1:dplyr::n()) |>
+      dplyr::mutate(id = dplyr::row_number()) |>
       tidyr::pivot_wider(
-        names_from = .data$id,
-        values_from = .data$.estimate,
+        names_from = id,
+        values_from = .estimate,
         names_prefix = ".estimate_"
       )
   }
@@ -153,15 +161,15 @@ rho_comp <- function(truth, estimate, summarize = FALSE) {
 #' @importFrom rlang .data
 kld_comp <- function(truth, estimate, summarize = FALSE) {
   m <- (truth * log(truth / estimate)) |>
-    apply(MARGIN = 2, FUN = sum, na.rm = TRUE)
+    apply(2, sum, na.rm = TRUE)
   if (summarize) {
-    tibble::tibble(.metric = "kld", .estimate = mean(m))
+    tibble::tibble(.metric = "kld", .estimate = mean(m, na.rm = TRUE))
   } else {
     tibble::tibble(.metric = "kld", .estimate = m) |>
-      dplyr::mutate(id = 1:dplyr::n()) |>
+      dplyr::mutate(id = dplyr::row_number()) |>
       tidyr::pivot_wider(
-        names_from = .data$id,
-        values_from = .data$.estimate,
+        names_from = id,
+        values_from = .estimate,
         names_prefix = ".estimate_"
       )
   }
@@ -183,17 +191,16 @@ kld_comp <- function(truth, estimate, summarize = FALSE) {
 #'   MLR values for each component.
 #' @importFrom rlang .data
 mlr_comp <- function(truth, estimate, summarize = FALSE) {
-  m <- (estimate / truth) |>
-    log() |>
-    apply(MARGIN = 2, FUN = mean)
+  m <- log(estimate / truth) |>
+    apply(2, mean, na.rm = TRUE)
   if (summarize) {
-    tibble::tibble(.metric = "mlr", .estimate = mean(m))
+    tibble::tibble(.metric = "mlr", .estimate = mean(m, na.rm = TRUE))
   } else {
     tibble::tibble(.metric = "mlr", .estimate = m) |>
-      dplyr::mutate(id = 1:dplyr::n()) |>
+      dplyr::mutate(id = dplyr::row_number()) |>
       tidyr::pivot_wider(
-        names_from = .data$id,
-        values_from = .data$.estimate,
+        names_from = id,
+        values_from = .estimate,
         names_prefix = ".estimate_"
       )
   }

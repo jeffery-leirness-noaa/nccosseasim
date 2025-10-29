@@ -2,21 +2,34 @@
 % Please edit documentation in R/predict_compositional_data.R
 \name{predict_compositional_data}
 \alias{predict_compositional_data}
-\title{Predict substrate composition probabilities}
+\title{Predict compositional probabilities}
 \usage{
 predict_compositional_data(object, new_data)
 }
 \arguments{
-\item{object}{A fitted Dirichlet regression model object of class \code{DirichletRegModel} (from \code{DirichletReg}).}
+\item{object}{A fitted \code{DirichletRegModel}.}
 
-\item{new_data}{A data frame or a \code{PackedSpatRaster}/\code{SpatRaster} object containing the input data.}
+\item{new_data}{A data frame or (Packed) \code{SpatRaster} containing predictor
+variables used in model fitting.}
 }
 \value{
-A modified version of the input \code{data} object, including predicted
-substrate composition probabilities and model-estimated alpha values.
-If the input is a \code{SpatRaster}, the output is a wrapped raster object.
+If \code{new_data} is a raster: wrapped \code{SpatRaster} with \code{.p_hat1},
+\code{.p_hat2}, ... layers. Else a tibble with the same columns.
 }
 \description{
-This function predicts substrate composition probabilities based on a fitted
-Dirichlet regression model.
+Generate expected composition probabilities (.p_hat*) from a
+fitted \code{DirichletRegModel} over new covariate data (data frame or raster).
+}
+\details{
+Missing rows (in predictors) yield NA for all components.
+}
+\examples{
+\donttest{
+# object <- fit_compositional_data(df, y ~ x1 + x2)
+# preds <- predict_compositional_data(object, df)
+}
+
+}
+\seealso{
+\code{\link[=fit_compositional_data]{fit_compositional_data()}}, \code{\link[=metrics_comp]{metrics_comp()}}
 }

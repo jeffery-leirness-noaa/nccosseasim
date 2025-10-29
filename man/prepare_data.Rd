@@ -2,52 +2,42 @@
 % Please edit documentation in R/prepare_data.R
 \name{prepare_data}
 \alias{prepare_data}
-\title{Generate polynomial feature rasters from a (Packed) SpatRaster}
+\title{Orthogonal polynomial raster features}
 \usage{
 prepare_data(x, poly_degree = 1)
 }
 \arguments{
-\item{x}{A \code{SpatRaster} or \code{PackedSpatRaster} whose layers will be expanded.}
+\item{x}{A \code{SpatRaster} or \code{PackedSpatRaster}.}
 
-\item{poly_degree}{Integer >= 1; number of polynomial terms per layer.}
+\item{poly_degree}{Integer >= 1; number of polynomial terms per original layer.}
 }
 \value{
-A \code{PackedSpatRaster} containing the polynomial feature layers.
+A wrapped \code{SpatRaster} containing expanded polynomial layers.
 }
 \description{
-Expands each layer of a \code{SpatRaster} (or \code{PackedSpatRaster}) into
-\code{poly_degree} polynomial features using
-\code{stats::poly(raw = FALSE, simple = TRUE)}.
-Returns a \code{PackedSpatRaster} whose layers are named
-\verb{<original_layer>_poly1}, ..., \verb{<original_layer>_poly<poly_degree>}.
+Expand each raster layer into an orthogonal polynomial basis
+(degree \code{poly_degree}) using \code{\link[stats:poly]{stats::poly()}} (centered & scaled, non-raw).
 }
 \details{
-The function:
+Steps:
 \enumerate{
-\item Unwraps a \code{PackedSpatRaster} if supplied.
-\item Extracts values as a dense matrix (\code{terra::values(mat = TRUE)}).
-\item For each original layer, computes an orthogonal polynomial basis
-(centered & scaled) of the specified degree. NAs are preserved.
-\item Reassembles all polynomial columns into a new \code{SpatRaster} and wraps.
+\item Unwrap (if packed).
+\item Extract values matrix.
+\item For each layer compute orthogonal polynomial basis (NAs preserved).
+\item Assemble into new raster and wrap.
 }
 
-If raw powers (x, x^2, ...) are preferred (for direct coefficient
-interpretation), consider an alternative implementation with \code{raw = TRUE}.
-
-Memory: Allocates one matrix of size \code{ncell(x) * (nlyr(x) * poly_degree)}
-plus temporary per-layer matrices; for very large rasters consider chunked
-processing.
+Output layer naming: \verb{<original>_poly1}, ..., \verb{_poly<poly_degree>}.
 }
 \examples{
 \donttest{
 library(terra)
-f <- system.file("ex/elev.tif", package = "terra")
-r <- rast(f)
-poly_r <- prepare_data(r, poly_degree = 3)
+r <- rast(system.file("ex/elev.tif", package = "terra"))
+poly_r <- prepare_data(r, poly_degree = 2)
 names(poly_r)
 }
 
 }
 \seealso{
-\code{\link[terra:rast]{terra::rast()}}, \code{\link[stats:poly]{stats::poly()}}
+\code{\link[=simulate_compositional_data]{simulate_compositional_data()}}, \code{\link[stats:poly]{stats::poly()}}
 }

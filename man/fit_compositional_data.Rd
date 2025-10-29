@@ -4,18 +4,44 @@
 \alias{fit_compositional_data}
 \title{Fit a Dirichlet regression model}
 \usage{
-fit_compositional_data(data, formula)
+fit_compositional_data(formula, data)
 }
 \arguments{
-\item{data}{A data frame containing the input data. Must include columns with names
-starting with "alpha_sim" for the Dirichlet parameters.}
+\item{formula}{A model formula acceptable to \code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}.}
 
-\item{formula}{A formula specifying the regression model to be fitted.}
+\item{data}{A data frame containing columns \code{.alpha_sim1}, \code{.alpha_sim2}, ... .}
 }
 \value{
-A fitted Dirichlet regression model object.
+A \code{DirichletRegModel} object.
 }
 \description{
-This function fits a Dirichlet regression model using the \code{DirichletReg::DirichReg()}
-function.
+Generates a compositional response from simulated Dirichlet
+parameters (.alpha_sim*) and fits a Dirichlet regression using
+\code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}.
+}
+\details{
+Steps:
+\enumerate{
+\item Extract columns starting with \code{.alpha_sim} and form an alpha matrix.
+\item Draw one Dirichlet composition per row.
+\item Attach the composition as column \code{y} (a \code{DirichletRegData} object).
+\item Fit the supplied formula with \code{DirichletReg::DirichReg()}.
+}
+
+The formula is passed unmodified. Provide a multi-part (|) formula for
+component-specific predictors if desired.
+}
+\examples{
+\donttest{
+# Assume sim is result of simulate_compositional_data(as_raster = FALSE)
+# with columns .alpha_sim1:.alpha_sim3
+# formula with common predictors for all components:
+# y ~ x1 + x2
+# (y will be created internally from .alpha_sim*)
+# fit_compositional_data(sim, y ~ 1)
+}
+
+}
+\seealso{
+\code{\link[=simulate_compositional_data]{simulate_compositional_data()}}, \code{\link[=predict_compositional_data]{predict_compositional_data()}}
 }
