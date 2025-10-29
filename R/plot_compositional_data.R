@@ -13,11 +13,11 @@
 #' @details If `sim$data` is a `PackedSpatRaster` object, it is first unpacked using
 #'   `terra::unwrap()`. The function ensures that `sim$data` is a `SpatRaster` object
 #'   before proceeding. The layers to be plotted are identified by their names, which
-#'   are expected to follow the pattern `"p_sim_1"`, `"p_sim_2"`, ..., `"p_sim_d"`,
+#'   are expected to follow the pattern `"p_sim1"`, `"p_sim2"`, ..., `"p_simd"`,
 #'   where `d` is the number of components.
 #'
 #' @export
-plot_comp_data <- function(sim) {
+plot_compositional_data <- function(sim) {
   # if sim$data is a PackedSpatRaster object, use terra::unwrap() to unpack it
   if (inherits(sim$data, "PackedSpatRaster")) {
     sim$data <- terra::unwrap(sim$data)
@@ -28,6 +28,6 @@ plot_comp_data <- function(sim) {
 
   # create plot
   sim$data |>
-    terra::subset(subset = stringr::str_c("p_sim_", 1:sim$d)) |>
+    terra::subset(subset = stringr::str_c(".p_sim", 1:sim$d)) |>
     terra::plot(range = c(0, 1), nr = 1)
 }

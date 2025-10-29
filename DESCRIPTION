@@ -13,7 +13,7 @@ Description: Series of functions to enable simulations that can be used to infor
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports: 
     DirichletReg,
     dplyr,
@@ -27,7 +27,7 @@ Imports:
     terra,
     tibble,
     tidyr
-Remotes:  
+Remotes: 
     jeffery-leirness-noaa/rastersample,
 URL: https://github.com/jeffery-leirness-noaa/nccosseasim
 BugReports: https://github.com/jeffery-leirness-noaa/nccosseasim/issues
