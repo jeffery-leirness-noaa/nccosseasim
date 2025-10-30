@@ -23,3 +23,14 @@ fit <- fit_compositional_data(
 ck <- predict_compositional_data(fit, new_data = r_prep)
 plot_compositional_data(sim_data)
 terra::plot(terra::unwrap(ck), range = c(0, 1), nr = 1)
+
+pred <- terra::unwrap(ck) |>
+  terra::values(mat = TRUE)
+layers <- stringr::str_replace_all(
+  colnames(pred),
+  pattern = "_hat",
+  replacement = "_sim"
+)
+sim <- terra::unwrap(sim_data$data) |>
+  terra::subset(layers) |>
+  terra::values(mat = TRUE)
