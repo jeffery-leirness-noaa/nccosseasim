@@ -33,6 +33,6 @@ Imports:
     tidyr,
     tidyselect
 Remotes: 
-    jeffery-leirness-noaa/rastersample,
-URL: https://github.com/jeffery-leirness-noaa/nccosseasim
-BugReports: https://github.com/jeffery-leirness-noaa/nccosseasim/issues
+    jeffery-leirness/rastersample,
+URL: https://github.com/jeffery-leirness/nccosseasim
+BugReports: https://github.com/jeffery-leirness/nccosseasim/issues
