@@ -1,4 +1,4 @@
-devtools::install()
+devtools::load_all()
 
 # Example usage
 library(terra)
@@ -49,6 +49,15 @@ res <- c(terra::unwrap(r_prep), terra::unwrap(sim_data$data)) |>
     replications = 2,
     parallel = FALSE
   )
+res <- c(terra::unwrap(r_prep), terra::unwrap(sim_data$data)) |>
+  run_simulation_compositional_data(
+    formula = y ~ 1 + elevation_poly1 + elevation_poly2,
+    n = c(50, 100),
+    method = "random",
+    replications = 2,
+    parallel = TRUE,
+    n_cores = 4
+  )
 
 
 df <- c(terra::unwrap(r_prep), terra::unwrap(sim_data$data)) |>
@@ -80,29 +89,12 @@ analyse_data <- function(condition, dat, fixed_objects) {
     sample_fit,
     new_data = fixed_objects$df
   )
-  nccosseasim::metrics_comp(
-    truth = dplyr::select(new_data, dplyr::starts_with(".p_sim")),
-    estimate = pred,
-    summarize = FALSE
+  adist <- robCompositions::aDist(
+    dplyr::select(fixed_objects$df, tidyselect::starts_with(".p_sim")),
+    y = dplyr::select(pred, tidyselect::starts_with(".p_hat"))
   )
-  # rmse1 <- yardstick::rmse_vec(
-  #   truth = fixed_objects$df$.p_sim1,
-  #   estimate = pred$.p_hat1
-  # )
-  # rmse2 <- yardstick::rmse_vec(
-  #   truth = fixed_objects$df$.p_sim2,
-  #   estimate = pred$.p_hat2
-  # )
-  # rmse3 <- yardstick::rmse_vec(
-  #   truth = fixed_objects$df$.p_sim3,
-  #   estimate = pred$.p_hat3
-  # )
-  # adist <- robCompositions::aDist(
-  #   dplyr::select(fixed_objects$df, tidyselect::starts_with(".p_sim")),
-  #   y = dplyr::select(pred, tidyselect::starts_with(".p_hat"))
-  # )
-  # ret <- c(rmse1 = rmse1, rmse2 = rmse2, rmse3 = rmse3, adist = adist)
-  # ret
+  ret <- c(adist = adist)
+  ret
 }
 
 summarise_data <- function(condition, results, fixed_objects) {
@@ -118,4 +110,16 @@ res <- SimDesign::runSimulation(
   summarise = summarise_data,
   fixed_objects = fixed_objects,
   save = FALSE
+)
+
+future::plan(future.mirai::mirai_multisession, workers = 4)
+res <- SimDesign::runSimulation(
+  design,
+  replications = 5,
+  generate = generate_data,
+  analyse = analyse_data,
+  summarise = summarise_data,
+  fixed_objects = fixed_objects,
+  save = FALSE,
+  parallel = "future"
 )

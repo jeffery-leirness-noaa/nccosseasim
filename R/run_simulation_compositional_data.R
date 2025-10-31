@@ -52,31 +52,32 @@ run_simulation_compositional_data <- function(
   parallel = FALSE,
   n_cores = 1L
 ) {
-  if (inherits(data, "PackedSpatRaster")) {
-    data <- terra::unwrap(data)
+  if (inherits(data, "SpatRaster")) {
+    data <- terra::wrap(data)
   }
   if (!is.null(sites)) {
-    sites <- sf::st_transform(sites, crs = terra::crs(data))
+    crs_ref <- terra::crs(terra::unwrap(data))
+    sites <- sf::st_transform(sites, crs = crs_ref)
   }
-  if (is.null(strata_var)) {
-    design <- SimDesign::createDesign(n = n, method = method)
+  design <- if (is.null(strata_var)) {
+    SimDesign::createDesign(n = n, method = method)
   } else {
-    design <- SimDesign::createDesign(
-      n = n,
-      method = method,
-      strata_var = strata_var
-    )
+    SimDesign::createDesign(n = n, method = method, strata_var = strata_var)
   }
   generate_data <- function(condition, fixed_objects) {
     n <- condition$n
     method <- condition$method
-    fixed_objects$data |>
-      rastersample::spatial_sample(
-        n = n,
-        method = method,
-        strata_var = strata_var,
-        drop_na = TRUE
-      )
+    data <- fixed_objects$data
+    if (inherits(data, "PackedSpatRaster")) {
+      data <- terra::unwrap(data)
+    }
+    rastersample::spatial_sample(
+      data,
+      n = n,
+      method = method,
+      strata_var = strata_var,
+      drop_na = TRUE
+    )
   }
   analyse_data <- function(condition, dat, fixed_objects) {
     new_data <- fixed_objects$data
@@ -86,14 +87,8 @@ run_simulation_compositional_data <- function(
     if (inherits(new_data, "SpatRaster")) {
       new_data <- terra::as.data.frame(new_data, na.rm = TRUE)
     }
-    sample_fit <- fit_compositional_data(
-      fixed_objects$formula,
-      data = dat
-    )
-    pred <- predict_compositional_data(
-      sample_fit,
-      new_data = new_data
-    )
+    sample_fit <- fit_compositional_data(fixed_objects$formula, data = dat)
+    pred <- predict_compositional_data(sample_fit, new_data = new_data)
     metrics <- metrics_comp(
       truth = dplyr::select(new_data, dplyr::starts_with(".p_sim")),
       estimate = pred,
@@ -114,8 +109,7 @@ run_simulation_compositional_data <- function(
     ret
   }
   summarise_data <- function(condition, results, fixed_objects) {
-    ret <- c(mean = SimDesign::bias(results, parameter = 0))
-    ret
+    c(mean = SimDesign::bias(results, parameter = 0))
   }
   if (parallel) {
     parallel <- "future"
@@ -131,7 +125,6 @@ run_simulation_compositional_data <- function(
     save = FALSE,
     parallel = parallel
   )
-
   # SimEngine::set_script(
   #   function() {
   #     samp_str <- sim_data |>
