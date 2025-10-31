@@ -33,7 +33,11 @@ predict_compositional_data <- function(object, new_data) {
   }
   valid <- stats::complete.cases(df)
   p_hat <- matrix(NA_real_, nrow = nrow(df), ncol = d)
-  p_hat[valid, ] <- predict(object, newdata = df[valid, ], mu = TRUE)
+  p_hat[valid, ] <- DirichletReg::predict.DirichletRegModel(
+    object,
+    newdata = df[valid, ],
+    mu = TRUE
+  )
   if (inherits(new_data, "SpatRaster")) {
     out <- terra::rast(terra::subset(new_data, 1), nlyr = d)
     terra::values(out) <- p_hat

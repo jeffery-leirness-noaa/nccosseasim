@@ -17,16 +17,21 @@ RoxygenNote: 7.3.3
 Imports: 
     DirichletReg,
     dplyr,
+    future,
+    future.mirai,
     pipebind,
     purrr,
     rastersample (>= 0.0.0.9000),
     rlang,
+    robCompositions,
     sf,
+    SimDesign,
     SimEngine,
     stringr,
     terra,
     tibble,
-    tidyr
+    tidyr,
+    tidyselect
 Remotes: 
     jeffery-leirness-noaa/rastersample,
 URL: https://github.com/jeffery-leirness-noaa/nccosseasim
