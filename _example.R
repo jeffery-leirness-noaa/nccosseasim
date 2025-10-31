@@ -44,20 +44,23 @@ robCompositions::aDist(sim, y = pred)
 res <- c(terra::unwrap(r_prep), terra::unwrap(sim_data$data)) |>
   run_simulation_compositional_data(
     formula = y ~ 1 + elevation_poly1 + elevation_poly2,
-    n = c(50, 100),
+    n = c(20, 50, 100, 500, 1000, 5000, 10000),
     method = "random",
-    replications = 2,
+    replications = 10,
     parallel = FALSE
   )
 res <- c(terra::unwrap(r_prep), terra::unwrap(sim_data$data)) |>
   run_simulation_compositional_data(
     formula = y ~ 1 + elevation_poly1 + elevation_poly2,
-    n = c(50, 100),
+    n = c(20, 50, 100, 500, 1000, 5000, 10000),
     method = "random",
-    replications = 2,
+    replications = 10,
     parallel = TRUE,
     n_cores = 4
   )
+ggplot2::ggplot(res, mapping = ggplot2::aes(x = n, y = mean.adist)) +
+  ggplot2::geom_point() +
+  ggplot2::geom_line()
 
 
 df <- c(terra::unwrap(r_prep), terra::unwrap(sim_data$data)) |>
