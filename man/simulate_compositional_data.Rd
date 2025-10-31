@@ -62,10 +62,9 @@ Rows with any NA in covariates produce NA across all components.
 }
 \examples{
 \donttest{
-library(terra)
-r <- rast(system.file("ex/elev.tif", package = "terra"))
+r <- terra::rast(system.file("ex/elev.tif", package = "terra"))
 sim <- simulate_compositional_data(r, d = 3, as_raster = TRUE, seed = 42)
-names(sim$data)
+names(terra::unwrap(sim$data))
 sim$coef_sim
 }
 

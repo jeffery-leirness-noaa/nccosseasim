@@ -21,8 +21,7 @@
 #'
 #' @examples
 #' \donttest{
-#' library(terra)
-#' r <- rast(system.file("ex/elev.tif", package = "terra"))
+#' r <- terra::rast(system.file("ex/elev.tif", package = "terra"))
 #' poly_r <- prepare_data(r, poly_degree = 2)
 #' names(poly_r)
 #' }

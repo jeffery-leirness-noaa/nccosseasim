@@ -12,8 +12,7 @@
 #'
 #' @examples
 #' \donttest{
-#' library(terra)
-#' r <- rast(system.file("ex/elev.tif", package = "terra"))
+#' r <- terra::rast(system.file("ex/elev.tif", package = "terra"))
 #' sim <- simulate_compositional_data(r, d = 3, as_raster = TRUE)
 #' plot_compositional_data(sim)
 #' }

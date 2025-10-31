@@ -33,10 +33,8 @@
 #' @seealso [predict_compositional_data()]
 #'
 #' @examples
-#' truth <- matrix(c(0.2,0.3,0.5,
-#'                   0.25,0.25,0.5), nrow = 2, byrow = TRUE)
-#' est   <- truth + matrix(c(0,0.05,-0.05,
-#'                           0.02,-0.02,0), nrow = 2, byrow = TRUE)
+#' truth <- matrix(c(0.2, 0.3, 0.5, 0.25, 0.25, 0.5), nrow = 2, byrow = TRUE)
+#' est <- truth + matrix(c(0, 0.05, -0.05, 0.02, -0.02, 0), nrow = 2, byrow = TRUE)
 #' metrics_comp(truth, est, metric = "all", summarize = FALSE)
 #'
 #' @export

@@ -1,42 +1,95 @@
-#' Run compositional model simulation
+#' Run repeated spatial sampling and compositional model simulation
 #'
-#' @description Execute repeated spatial sampling, model fitting, prediction,
-#' and metric computation using [SimEngine]. Returns a `SimEngine` simulation
-#' object with summarized metrics per iteration.
-#'
-#' @param data (Packed) `SpatRaster` containing simulated `.p_sim*` layers
-#' and covariates used for fitting.
-#' @param sites Optional `sf` point object for site locations (transformed to
-#' `data` CRS).
-#' @param formula Model formula passed to [DirichletReg::DirichReg()].
-#' @param n Sample size per iteration.
-#' @param method Sampling method passed to [rastersample::spatial_sample()].
-#' @param strata_var Optional stratification variable name (character).
-#' @param replications Number of simulation replications.
-#' @param verbose Logical; if TRUE prints fitting progress (may slow runs).
-#' @param parallel Logical; if TRUE enables parallel execution via SimEngine.
-#' @param n_cores Integer; number of cores (ignored if `parallel = FALSE`).
-#'
-#' @return A `SimEngine` simulation result (after `SimEngine::run()`), containing
-#' metric summaries (`rmse_*`, `mae_*`, `rho_*`, `kld_*`) and a `.complex`
-#' list with full per-component metric tibble.
+#' @description
+#' Performs a Monte Carlo simulation using [SimDesign::runSimulation()] that,
+#' for each replication:
+#' 1. Samples spatial locations from a (Packed) `SpatRaster` via
+#'    [rastersample::spatial_sample()].
+#' 2. Generates one compositional response per sampled row from `.alpha_sim*`
+#'    layers (see [fit_compositional_data()]) and fits a Dirichlet regression
+#'    with [DirichletReg::DirichReg()].
+#' 3. Predicts composition probabilities `.p_hat*` over the full raster (all
+#'    cells converted to a data frame for prediction).
+#' 4. Computes component-wise performance metrics against ground truth
+#'    probabilities `.p_sim*` using [metrics_comp()] (RMSE, MAE, Spearman rho,
+#'    KLD, MLR) plus the Aitchison distance (robCompositions::aDist).
 #'
 #' @details
-#' Each iteration:
-#' 1. Sample spatial locations.
-#' 2. Fit Dirichlet regression (using internal fit/predict wrappers).
-#' 3. Predict compositions for full raster.
-#' 4. Compute metrics via [metrics_comp()] (component-wise + summary stats).
+#' Expected raster layers:
+#' - `.alpha_sim1`, `.alpha_sim2`, ... : Dirichlet parameters used to simulate
+#'   the sampled response internally (not used directly in prediction).
+#' - `.p_sim1`, `.p_sim2`, ... : Ground-truth composition probabilities used
+#'   for metric calculation.
+#' - Predictor (covariate) layers referenced in the model `formula`.
 #'
-#' @seealso [simulate_compositional_data()], [fit_compositional_data()],
-#' [predict_compositional_data()], [metrics_comp()]
+#' The returned object is the list produced by [SimDesign::runSimulation()],
+#' containing per-variable summaries (currently only the mean/bias relative to
+#' 0 via `SimDesign::bias()`) for each metric-component combination:
+#' `rmse_1`, `rmse_2`, ..., `mae_1`, ..., `rho_1`, ..., `kld_1`, ..., `mlr_1`,
+#' ... and `adist` (Aitchison distance). Each variable's replication-level
+#' values are the raw metric outputs; summarization reduces them to a single
+#' `mean` column. (No additional distribution summaries are computed.)
+#'
+#' Parallel execution (if `parallel = TRUE`) uses the `"future"` backend and
+#' sets a multisession plan from `future.mirai`.
+#'
+#' Note: The `sites` argument is currently only reprojected to match `data`
+#' but otherwise unused in the simulation (placeholder for future stratified or
+#' fixed-location designs).
+#'
+#' @param data A (Packed) `SpatRaster` containing `.alpha_sim*`, `.p_sim*` and
+#' predictor layers required by `formula`.
+#' @param sites Optional `sf` POINT layer; reprojected to `data` CRS (currently
+#' unused in sampling logic).
+#' @param formula A Dirichlet regression formula passed to
+#' [DirichletReg::DirichReg()]. Response (`y`) is constructed internally.
+#' @param n Integer; sample size per replication.
+#' @param method Sampling method for [rastersample::spatial_sample()].
+#' @param strata_var Optional character; name of a layer used for stratified
+#' sampling (passed through to `rastersample::spatial_sample()`).
+#' @param replications Integer; number of Monte Carlo replications.
+#' @param verbose Logical; reserved (currently not producing messages).
+#' @param parallel Logical; if `TRUE`, enables future-based parallelism.
+#' @param n_cores Integer; number of workers (ignored if `parallel = FALSE`).
+#'
+#' @return A list (class `"simulation"`) from [SimDesign::runSimulation()] with:
+#' - `$results`: replication-level metric-component values.
+#' - `$summaries`: a data frame of per-variable mean (bias vs 0).
+#' - Other bookkeeping elements from SimDesign.
+#'
+#' @seealso
+#' [simulate_compositional_data()],
+#' [fit_compositional_data()],
+#' [predict_compositional_data()],
+#' [metrics_comp()],
+#' [rastersample::spatial_sample()],
+#' [SimDesign::runSimulation()]
 #'
 #' @examples
-#' \donttest{
-#' # Requires SimEngine and rastersample packages.
-#' # sim_obj <- run_simulation(sim_data = sim$data, formula = y ~ 1,
-#' #                           n = 50, method = "random",
-#' #                           replications = 10, parallel = FALSE)
+#' \dontrun{
+#' f <- system.file("ex/elev.tif", package = "terra")
+#' r <- terra::rast(f)
+#' r <- c(r, MultiscaleDTM::BPI(r, w = c(2, 4)))
+#' r_prep <- prepare_data(r, poly_degree = 3)
+#' sim_data <- simulate_compositional_data(
+#'   x = r_prep,
+#'   d = 3,
+#'   n_cov_sim = 3,
+#'   as_raster = TRUE,
+#'   seed = 123
+#' )
+#' dat <- c(terra::unwrap(r_prep), terra::unwrap(sim_data$data))
+#' res <- run_simulation_compositional_data(
+#'   dat,
+#'   formula = y ~ 1 + elevation_poly1 + elevation_poly2,
+#'   n = c(20, 50, 100, 500, 1000, 5000, 10000),
+#'   method = "random",
+#'   replications = 10,
+#'   parallel = FALSE
+#' )
+#' ggplot2::ggplot(res, mapping = ggplot2::aes(x = n, y = mean.adist)) +
+#'   ggplot2::geom_point() +
+#'   ggplot2::geom_line()
 #' }
 #'
 #' @export
@@ -96,7 +149,7 @@ run_simulation_compositional_data <- function(
     ) |>
       tidyr::pivot_longer(
         cols = dplyr::starts_with(".estimate_"),
-        names_to = ".class",
+        names_to = ".comp",
         names_prefix = ".estimate_",
         values_to = ".estimate"
       )
@@ -105,7 +158,7 @@ run_simulation_compositional_data <- function(
       y = pred
     )
     ret <- c(metrics$.estimate, adist)
-    names(ret) <- c(paste0(metrics$.metric, "_", metrics$.class), "adist")
+    names(ret) <- c(paste0(metrics$.metric, "_", metrics$.comp), "adist")
     ret
   }
   summarise_data <- function(condition, results, fixed_objects) {
@@ -113,6 +166,9 @@ run_simulation_compositional_data <- function(
   }
   if (parallel) {
     parallel <- "future"
+    if (n_cores == 1L) {
+      n_cores <- future::availableCores()
+    }
     future::plan(future.mirai::mirai_multisession, workers = n_cores)
   }
   SimDesign::runSimulation(

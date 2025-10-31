@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_simulation_compositional_data.R
 \name{run_simulation_compositional_data}
 \alias{run_simulation_compositional_data}
-\title{Run compositional model simulation}
+\title{Run repeated spatial sampling and compositional model simulation}
 \usage{
 run_simulation_compositional_data(
   data,
@@ -18,57 +18,112 @@ run_simulation_compositional_data(
 )
 }
 \arguments{
-\item{data}{(Packed) \code{SpatRaster} containing simulated \verb{.p_sim*} layers
-and covariates used for fitting.}
+\item{data}{A (Packed) \code{SpatRaster} containing \verb{.alpha_sim*}, \verb{.p_sim*} and
+predictor layers required by \code{formula}.}
 
-\item{sites}{Optional \code{sf} point object for site locations (transformed to
-\code{data} CRS).}
+\item{sites}{Optional \code{sf} POINT layer; reprojected to \code{data} CRS (currently
+unused in sampling logic).}
 
-\item{formula}{Model formula passed to \code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}.}
+\item{formula}{A Dirichlet regression formula passed to
+\code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}. Response (\code{y}) is constructed internally.}
 
-\item{n}{Sample size per iteration.}
+\item{n}{Integer; sample size per replication.}
 
-\item{method}{Sampling method passed to \code{\link[rastersample:spatial_sample]{rastersample::spatial_sample()}}.}
+\item{method}{Sampling method for \code{\link[rastersample:spatial_sample]{rastersample::spatial_sample()}}.}
 
-\item{strata_var}{Optional stratification variable name (character).}
+\item{strata_var}{Optional character; name of a layer used for stratified
+sampling (passed through to \code{rastersample::spatial_sample()}).}
 
-\item{replications}{Number of simulation replications.}
+\item{replications}{Integer; number of Monte Carlo replications.}
 
-\item{verbose}{Logical; if TRUE prints fitting progress (may slow runs).}
+\item{verbose}{Logical; reserved (currently not producing messages).}
 
-\item{parallel}{Logical; if TRUE enables parallel execution via SimEngine.}
+\item{parallel}{Logical; if \code{TRUE}, enables future-based parallelism.}
 
-\item{n_cores}{Integer; number of cores (ignored if \code{parallel = FALSE}).}
+\item{n_cores}{Integer; number of workers (ignored if \code{parallel = FALSE}).}
 }
 \value{
-A \code{SimEngine} simulation result (after \code{SimEngine::run()}), containing
-metric summaries (\verb{rmse_*}, \verb{mae_*}, \verb{rho_*}, \verb{kld_*}) and a \code{.complex}
-list with full per-component metric tibble.
+A list (class \code{"simulation"}) from \code{\link[SimDesign:runSimulation]{SimDesign::runSimulation()}} with:
+\itemize{
+\item \verb{$results}: replication-level metric-component values.
+\item \verb{$summaries}: a data frame of per-variable mean (bias vs 0).
+\item Other bookkeeping elements from SimDesign.
+}
 }
 \description{
-Execute repeated spatial sampling, model fitting, prediction,
-and metric computation using \link[SimEngine:SimEngine-package]{SimEngine::SimEngine}. Returns a \code{SimEngine} simulation
-object with summarized metrics per iteration.
+Performs a Monte Carlo simulation using \code{\link[SimDesign:runSimulation]{SimDesign::runSimulation()}} that,
+for each replication:
+\enumerate{
+\item Samples spatial locations from a (Packed) \code{SpatRaster} via
+\code{\link[rastersample:spatial_sample]{rastersample::spatial_sample()}}.
+\item Generates one compositional response per sampled row from \verb{.alpha_sim*}
+layers (see \code{\link[=fit_compositional_data]{fit_compositional_data()}}) and fits a Dirichlet regression
+with \code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}.
+\item Predicts composition probabilities \verb{.p_hat*} over the full raster (all
+cells converted to a data frame for prediction).
+\item Computes component-wise performance metrics against ground truth
+probabilities \verb{.p_sim*} using \code{\link[=metrics_comp]{metrics_comp()}} (RMSE, MAE, Spearman rho,
+KLD, MLR) plus the Aitchison distance (robCompositions::aDist).
+}
 }
 \details{
-Each iteration:
-\enumerate{
-\item Sample spatial locations.
-\item Fit Dirichlet regression (using internal fit/predict wrappers).
-\item Predict compositions for full raster.
-\item Compute metrics via \code{\link[=metrics_comp]{metrics_comp()}} (component-wise + summary stats).
+Expected raster layers:
+\itemize{
+\item \code{.alpha_sim1}, \code{.alpha_sim2}, ... : Dirichlet parameters used to simulate
+the sampled response internally (not used directly in prediction).
+\item \code{.p_sim1}, \code{.p_sim2}, ... : Ground-truth composition probabilities used
+for metric calculation.
+\item Predictor (covariate) layers referenced in the model \code{formula}.
 }
+
+The returned object is the list produced by \code{\link[SimDesign:runSimulation]{SimDesign::runSimulation()}},
+containing per-variable summaries (currently only the mean/bias relative to
+0 via \code{SimDesign::bias()}) for each metric-component combination:
+\code{rmse_1}, \code{rmse_2}, ..., \code{mae_1}, ..., \code{rho_1}, ..., \code{kld_1}, ..., \code{mlr_1},
+... and \code{adist} (Aitchison distance). Each variable's replication-level
+values are the raw metric outputs; summarization reduces them to a single
+\code{mean} column. (No additional distribution summaries are computed.)
+
+Parallel execution (if \code{parallel = TRUE}) uses the \code{"future"} backend and
+sets a multisession plan from \code{future.mirai}.
+
+Note: The \code{sites} argument is currently only reprojected to match \code{data}
+but otherwise unused in the simulation (placeholder for future stratified or
+fixed-location designs).
 }
 \examples{
-\donttest{
-# Requires SimEngine and rastersample packages.
-# sim_obj <- run_simulation(sim_data = sim$data, formula = y ~ 1,
-#                           n = 50, method = "random",
-#                           replications = 10, parallel = FALSE)
+\dontrun{
+f <- system.file("ex/elev.tif", package = "terra")
+r <- terra::rast(f)
+r <- c(r, MultiscaleDTM::BPI(r, w = c(2, 4)))
+r_prep <- prepare_data(r, poly_degree = 3)
+sim_data <- simulate_compositional_data(
+  x = r_prep,
+  d = 3,
+  n_cov_sim = 3,
+  as_raster = TRUE,
+  seed = 123
+)
+dat <- c(terra::unwrap(r_prep), terra::unwrap(sim_data$data))
+res <- run_simulation_compositional_data(
+  dat,
+  formula = y ~ 1 + elevation_poly1 + elevation_poly2,
+  n = c(20, 50, 100, 500, 1000, 5000, 10000),
+  method = "random",
+  replications = 10,
+  parallel = FALSE
+)
+ggplot2::ggplot(res, mapping = ggplot2::aes(x = n, y = mean.adist)) +
+  ggplot2::geom_point() +
+  ggplot2::geom_line()
 }
 
 }
 \seealso{
-\code{\link[=simulate_compositional_data]{simulate_compositional_data()}}, \code{\link[=fit_compositional_data]{fit_compositional_data()}},
-\code{\link[=predict_compositional_data]{predict_compositional_data()}}, \code{\link[=metrics_comp]{metrics_comp()}}
+\code{\link[=simulate_compositional_data]{simulate_compositional_data()}},
+\code{\link[=fit_compositional_data]{fit_compositional_data()}},
+\code{\link[=predict_compositional_data]{predict_compositional_data()}},
+\code{\link[=metrics_comp]{metrics_comp()}},
+\code{\link[rastersample:spatial_sample]{rastersample::spatial_sample()}},
+\code{\link[SimDesign:runSimulation]{SimDesign::runSimulation()}}
 }
