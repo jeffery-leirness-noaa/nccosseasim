@@ -32,8 +32,8 @@ sampling design and data collection decisions.
 You can install the development version of nccosseasim from GitHub:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("jeffery-leirness-noaa/nccosseasim")
+# install.packages("pak")
+pak::pkg_install("jeffery-leirness/nccosseasim@develop")
 ```
 
 ## Usage
@@ -42,9 +42,9 @@ devtools::install_github("jeffery-leirness-noaa/nccosseasim")
 library(nccosseasim)
 
 # Example code will go here
-# simulate_comp_data()
-# run_simulation()
-# plot_comp_data()
+# simulate_compositional_data()
+# run_simulation_compositional_data()
+# plot_compositional_data()
 ```
 
 ## Getting help
