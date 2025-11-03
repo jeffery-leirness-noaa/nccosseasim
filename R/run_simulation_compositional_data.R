@@ -157,6 +157,7 @@ run_simulation_compositional_data <- function(
       dplyr::select(new_data, tidyselect::starts_with(".p_sim")),
       y = pred
     )
+    # adist <- adist / nrow(new_data) # average Aitchison distance
     ret <- c(metrics$.estimate, adist)
     names(ret) <- c(paste0(metrics$.metric, "_", metrics$.comp), "adist")
     ret
