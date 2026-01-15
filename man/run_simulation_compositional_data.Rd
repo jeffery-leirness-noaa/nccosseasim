@@ -10,8 +10,12 @@ run_simulation_compositional_data(
   formula,
   n,
   method,
+  bias_var = NULL,
+  bias_thres = NULL,
+  clh_var = NULL,
+  clh_iter = NULL,
   strata_var = NULL,
-  replications,
+  replications = 1L,
   verbose = FALSE,
   parallel = FALSE,
   n_cores = 1L
@@ -30,6 +34,18 @@ unused in sampling logic).}
 \item{n}{Integer; sample size per replication.}
 
 \item{method}{Sampling method for \code{\link[rastersample:spatial_sample]{rastersample::spatial_sample()}}.}
+
+\item{bias_var}{Optional character; name of a layer used for biased sampling
+(passed through to \code{rastersample::spatial_sample()}).}
+
+\item{bias_thres}{Optional numeric; threshold for biased sampling
+(passed through to \code{rastersample::spatial_sample()}).}
+
+\item{clh_var}{Optional character; layer(s) used for conditioned Latin
+hypercube sampling (passed through to \code{rastersample::spatial_sample()}).}
+
+\item{clh_iter}{Optional integer; number of iterations for conditioned Latin
+hypercube sampling (passed through to \code{rastersample::spatial_sample()}).}
 
 \item{strata_var}{Optional character; name of a layer used for stratified
 sampling (passed through to \code{rastersample::spatial_sample()}).}

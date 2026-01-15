@@ -45,6 +45,14 @@
 #' [DirichletReg::DirichReg()]. Response (`y`) is constructed internally.
 #' @param n Integer; sample size per replication.
 #' @param method Sampling method for [rastersample::spatial_sample()].
+#' @param bias_var Optional character; name of a layer used for biased sampling
+#' (passed through to `rastersample::spatial_sample()`).
+#' @param bias_thres Optional numeric; threshold for biased sampling
+#' (passed through to `rastersample::spatial_sample()`).
+#' @param clh_var Optional character; layer(s) used for conditioned Latin
+#' hypercube sampling (passed through to `rastersample::spatial_sample()`).
+#' @param clh_iter Optional integer; number of iterations for conditioned Latin
+#' hypercube sampling (passed through to `rastersample::spatial_sample()`).
 #' @param strata_var Optional character; name of a layer used for stratified
 #' sampling (passed through to `rastersample::spatial_sample()`).
 #' @param replications Integer; number of Monte Carlo replications.
@@ -99,8 +107,12 @@ run_simulation_compositional_data <- function(
   formula,
   n,
   method,
+  bias_var = NULL,
+  bias_thres = NULL,
+  clh_var = NULL,
+  clh_iter = NULL,
   strata_var = NULL,
-  replications,
+  replications = 1L,
   verbose = FALSE,
   parallel = FALSE,
   n_cores = 1L
@@ -128,6 +140,10 @@ run_simulation_compositional_data <- function(
       data,
       n = n,
       method = method,
+      bias_var = bias_var,
+      bias_thres = bias_thres,
+      clh_var = clh_var,
+      clh_iter = clh_iter,
       strata_var = strata_var,
       drop_na = TRUE
     )
