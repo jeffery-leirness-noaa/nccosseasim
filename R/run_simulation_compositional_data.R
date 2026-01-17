@@ -47,7 +47,7 @@
 #' @param method Sampling method for [rastersample::spatial_sample()].
 #' @param bias_var Optional character; name of a layer used for biased sampling
 #' (passed through to `rastersample::spatial_sample()`).
-#' @param bias_thres Optional numeric; threshold for biased sampling
+#' @param bias_thresh Optional numeric; threshold for biased sampling
 #' (passed through to `rastersample::spatial_sample()`).
 #' @param clh_var Optional character; layer(s) used for conditioned Latin
 #' hypercube sampling (passed through to `rastersample::spatial_sample()`).
@@ -108,7 +108,7 @@ run_simulation_compositional_data <- function(
   n,
   method,
   bias_var = NULL,
-  bias_thres = NULL,
+  bias_thresh = NULL,
   clh_var = NULL,
   clh_iter = NULL,
   strata_var = NULL,
@@ -141,7 +141,7 @@ run_simulation_compositional_data <- function(
       n = n,
       method = method,
       bias_var = bias_var,
-      bias_thres = bias_thres,
+      bias_thresh = bias_thresh,
       clh_var = clh_var,
       clh_iter = clh_iter,
       strata_var = strata_var,
