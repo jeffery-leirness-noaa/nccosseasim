@@ -7,7 +7,7 @@
 fit_compositional_data(formula, data)
 }
 \arguments{
-\item{formula}{A model formula acceptable to \code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}.}
+\item{formula}{A model formula acceptable to \code{\link[DirichletReg:DirichReg]{DirichletReg::DirichReg()}}.}
 
 \item{data}{A data frame containing columns \code{.alpha_sim1}, \code{.alpha_sim2}, ... .}
 }
@@ -17,7 +17,7 @@ A \code{DirichletRegModel} object.
 \description{
 Generates a compositional response from simulated Dirichlet
 parameters (.alpha_sim*) and fits a Dirichlet regression using
-\code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}.
+\code{\link[DirichletReg:DirichReg]{DirichletReg::DirichReg()}}.
 }
 \details{
 Steps:

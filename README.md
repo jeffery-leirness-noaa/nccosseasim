@@ -21,11 +21,11 @@ sampling design and data collection decisions.
 
 ## Features
 
-- Simulate compositional data for ecological analyses
-- Run simulations with different parameterizations
-- Compare metrics across simulation scenarios
-- Fit Dirichlet models to compositional data
-- Visualize simulation results with customizable plotting functions
+  - Simulate compositional data for ecological analyses
+  - Run simulations with different parameterizations
+  - Compare metrics across simulation scenarios
+  - Fit Dirichlet models to compositional data
+  - Visualize simulation results with customizable plotting functions
 
 ## Installation
 
@@ -33,7 +33,7 @@ You can install the development version of nccosseasim from GitHub:
 
 ``` r
 # install.packages("pak")
-pak::pkg_install("jeffery-leirness/nccosseasim@develop")
+pak::pkg_install("jeffery-leirness/nccosseasim")
 ```
 
 ## Usage
@@ -70,11 +70,6 @@ commercial product or activity by DOC or the United States Government.
 
 ## License
 
-Software code created by U.S. Government employees is not subject to
-copyright in the United States (17 U.S.C. §105). The United
-States/Department of Commerce reserve all rights to seek and obtain
-copyright protection in countries other than the United States for
-Software authored in its entirety by the Department of Commerce. To this
-end, the Department of Commerce hereby grants to Recipient a
-royalty-free, nonexclusive license to use, copy, and create derivative
-works of the Software outside of the United States.
+This software is in the public domain in the United States and is
+released internationally under a royalty-free, nonexclusive license. See
+the [LICENSE](LICENSE) file for full details.

@@ -11,7 +11,7 @@ run_simulation_compositional_data(
   n,
   method,
   bias_var = NULL,
-  bias_thres = NULL,
+  bias_thresh = NULL,
   clh_var = NULL,
   clh_iter = NULL,
   strata_var = NULL,
@@ -29,7 +29,7 @@ predictor layers required by \code{formula}.}
 unused in sampling logic).}
 
 \item{formula}{A Dirichlet regression formula passed to
-\code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}. Response (\code{y}) is constructed internally.}
+\code{\link[DirichletReg:DirichReg]{DirichletReg::DirichReg()}}. Response (\code{y}) is constructed internally.}
 
 \item{n}{Integer; sample size per replication.}
 
@@ -38,7 +38,7 @@ unused in sampling logic).}
 \item{bias_var}{Optional character; name of a layer used for biased sampling
 (passed through to \code{rastersample::spatial_sample()}).}
 
-\item{bias_thres}{Optional numeric; threshold for biased sampling
+\item{bias_thresh}{Optional numeric; threshold for biased sampling
 (passed through to \code{rastersample::spatial_sample()}).}
 
 \item{clh_var}{Optional character; layer(s) used for conditioned Latin
@@ -74,7 +74,7 @@ for each replication:
 \code{\link[rastersample:spatial_sample]{rastersample::spatial_sample()}}.
 \item Generates one compositional response per sampled row from \verb{.alpha_sim*}
 layers (see \code{\link[=fit_compositional_data]{fit_compositional_data()}}) and fits a Dirichlet regression
-with \code{\link[DirichletReg:dirichreg]{DirichletReg::DirichReg()}}.
+with \code{\link[DirichletReg:DirichReg]{DirichletReg::DirichReg()}}.
 \item Predicts composition probabilities \verb{.p_hat*} over the full raster (all
 cells converted to a data frame for prediction).
 \item Computes component-wise performance metrics against ground truth

@@ -10,10 +10,9 @@ Authors@R:
       comment = c(ORCID = "0000-0003-3604-2790")
       )
 Description: Series of functions to enable simulations that can be used to inform sampling design decisions within the NOAA NCCOS SEA branch.
-License: MIT + file LICENSE
+License: file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports: 
     DirichletReg,
     dplyr,
@@ -33,3 +32,4 @@ Remotes:
     jeffery-leirness/rastersample,
 URL: https://github.com/jeffery-leirness/nccosseasim
 BugReports: https://github.com/jeffery-leirness/nccosseasim/issues
+Config/roxygen2/version: 8.0.0

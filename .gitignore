@@ -4,3 +4,6 @@
 .httr-oauth
 .DS_Store
 .quarto
+*.amltmp
+*.amltemp
+*.amlignore

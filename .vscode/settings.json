@@ -1,0 +1,28 @@
+{
+  // Python Formatting (Ruff)
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  // R Setup (Pixi)
+  "r.rterm.option": ["run", "R", "--no-save", "--no-restore"],
+  "r.sessionWatcher": true,
+  "r.plot.useHttpgd": true,
+
+  // R Formatting (Air)
+  "[r]": {
+    "editor.defaultFormatter": "Posit.air-vscode",
+    "editor.formatOnSave": true
+  },
+
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": ".github/commit-instructions.md"
+    }
+  ]
+}

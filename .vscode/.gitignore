@@ -1,0 +1,5 @@
+# Ignore everything in .vscode except committed workspace config
+*
+!settings.json
+!extensions.json
+!.gitignore
